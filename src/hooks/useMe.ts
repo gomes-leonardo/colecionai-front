@@ -4,7 +4,7 @@ import { getMe } from "@/services/userService";
 export function useMe(userId: string | undefined) {
   return useQuery({
     queryKey: ['me', userId],
-    queryFn: () => getMe(userId!),
+    queryFn: () => getMe(),
     enabled: !!userId,
   });
 }
