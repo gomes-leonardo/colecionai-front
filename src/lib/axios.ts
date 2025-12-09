@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+// Usa a URL de produção por padrão, mas permite override via env
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://colecionai-api.onrender.com';
+
 export const api = axios.create({
-  baseURL: 'https://colecionai-api.onrender.com',
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 

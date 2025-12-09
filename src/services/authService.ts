@@ -32,7 +32,8 @@ export async function resetPassword(token: string, password: string) {
 }
 
 export async function verifyEmail(token: string) {
-  const response = await api.post("/verify", { token });
+  // ⚠️ IMPORTANTE: O campo deve ser verifyEmailToken conforme a API
+  const response = await api.post("/verify", { verifyEmailToken: token });
   return response.data;
 }
 

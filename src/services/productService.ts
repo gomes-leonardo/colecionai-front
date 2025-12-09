@@ -102,5 +102,7 @@ export async function deleteProduct(id: string) {
 export function getProductImageUrl(imagePath: string | null | undefined) {
   if (!imagePath) return null;
   if (imagePath.startsWith('http')) return imagePath;
-  return `${api.defaults.baseURL}/files/${imagePath}`;
+  // A API retorna o caminho relativo, precisamos construir a URL completa
+  const baseURL = api.defaults.baseURL || 'https://colecionai-api.onrender.com';
+  return `${baseURL}/files/${imagePath}`;
 }

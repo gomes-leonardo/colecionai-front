@@ -71,7 +71,10 @@ export default function LoginPage() {
       const errorData = error.response?.data;
       const errorMsg = errorData?.message || errorData?.error || "";
       
-      const isUnverified = errorMsg.toLowerCase().includes('verificado');
+      // Verifica se o erro é de email não verificado (401 com mensagem específica)
+      const isUnverified = error.response?.status === 401 && 
+        (errorMsg.toLowerCase().includes('verificado') || 
+         errorMsg.toLowerCase().includes('email não verificado'));
 
       if (isUnverified) {
         setPendingEmail(form.getValues('email'));

@@ -28,11 +28,12 @@ export default function RegisterPage() {
   const { mutateAsync: createAccount, isPending } = useMutation({
     mutationFn: register,
     onSuccess: (data: any) => {
-      // O backend pode retornar user ou email diretamente
-      const email = data?.user?.email || data?.email || form.getValues('email');
+      // A API retorna { status: "success", message: "..." }
+      // Usamos o email do formulário para redirecionar
+      const email = form.getValues('email');
 
       toast.success("Conta criada com sucesso!", {
-        description: "Enviamos um email de verificação para você.",
+        description: data?.message || "Enviamos um email de verificação para você.",
         className: "bg-green-600 text-white border-none"
       });
 

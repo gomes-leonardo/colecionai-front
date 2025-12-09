@@ -51,27 +51,16 @@ function VerifyContent() {
     onSuccess: (data: any) => {
       setStatus('success');
       
-      // Auto-login check
-      if (data?.token && data?.user) {
-        localStorage.setItem('colecionai.token', data.token);
-        localStorage.setItem('colecionai.user', JSON.stringify(data.user));
-        
-        toast.success("Conta verificada e logada!", {
-          description: "Redirecionando para o dashboard...",
-          className: "bg-green-600 text-white border-none"
-        });
-        
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1500);
-      } else {
-        toast.success("Email verificado com sucesso!", {
-          className: "bg-green-600 text-white border-none"
-        });
-        setTimeout(() => {
-          router.push('/login');
-        }, 2000);
-      }
+      // A API retorna { status: "success", message: "..." }
+      // Não retorna token/user automaticamente, precisa fazer login
+      toast.success("Email verificado com sucesso!", {
+        description: data?.message || "Agora você pode fazer login.",
+        className: "bg-green-600 text-white border-none"
+      });
+      
+      setTimeout(() => {
+        router.push('/login');
+      }, 2000);
     },
     onError: (error: any) => {
       setStatus('error');
