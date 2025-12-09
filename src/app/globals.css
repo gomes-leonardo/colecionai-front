@@ -1,26 +1,224 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Base Neutra - Off-white quente #F5F4EF */
+    --background: 50 17% 95%;
+    /* Cinza Grafite #1C1C1E for text/foreground in light mode for contrast */
+    --foreground: 240 3% 11%;
+    
+    /* White for cards on the off-white background to create subtle depth */
+    --card: 0 0% 100%;
+    --card-foreground: 240 3% 11%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 3% 11%;
+    
+    /* Azul Elétrico Suave #4A7BFF */
+    --primary: 224 100% 65%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Roxo Neon Controlado #A26BFF */
+    --secondary: 262 100% 71%;
+    --secondary-foreground: 0 0% 100%;
+    
+    /* Off-white slightly darker for muted */
+    --muted: 50 10% 90%;
+    --muted-foreground: 240 2% 40%;
+    
+    /* Amarelo Âmbar #FFC857 */
+    --accent: 40 100% 67%;
+    --accent-foreground: 240 3% 11%;
+    
+    /* Vermelho Esporte #E04545 */
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Verde Esmeralda #39B36E (Success) */
+    --success: 146 52% 46%;
+    --success-foreground: 0 0% 100%;
+    
+    --border: 240 2% 85%;
+    --input: 240 2% 85%;
+    --ring: 224 100% 65%; /* Primary Blue Ring */
+    
+    --radius: 0.75rem;
+    
+    --chart-1: 224 100% 65%; /* Blue */
+    --chart-2: 146 52% 46%; /* Green */
+    --chart-3: 40 100% 67%; /* Amber */
+    --chart-4: 262 100% 71%; /* Purple */
+    --chart-5: 0 72% 58%; /* Red */
+  }
+
+  .dark {
+    /* Base Neutra - Cinza Grafite #1C1C1E */
+    --background: 240 3% 11%;
+    /* Off-white quente #F5F4EF for text */
+    --foreground: 50 17% 95%;
+    
+    /* Cinza Médio #3A3A3C */
+    --card: 240 2% 23%;
+    --card-foreground: 50 17% 95%;
+    
+    --popover: 240 2% 23%;
+    --popover-foreground: 50 17% 95%;
+    
+    /* Azul Elétrico Suave #4A7BFF */
+    --primary: 224 100% 65%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Roxo Neon Controlado #A26BFF */
+    --secondary: 262 100% 71%;
+    --secondary-foreground: 0 0% 100%;
+    
+    /* Darker grey for muted */
+    --muted: 240 2% 18%;
+    --muted-foreground: 240 5% 65%;
+    
+    /* Amarelo Âmbar #FFC857 */
+    --accent: 40 100% 67%;
+    --accent-foreground: 240 3% 11%;
+    
+    /* Vermelho Esporte #E04545 */
+    --destructive: 0 72% 58%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Verde Esmeralda #39B36E */
+    --success: 146 52% 46%;
+    --success-foreground: 0 0% 100%;
+    
+    --border: 240 2% 23%;
+    --input: 240 2% 23%;
+    --ring: 224 100% 65%;
+    
+    --chart-1: 224 100% 65%;
+    --chart-2: 146 52% 46%;
+    --chart-3: 40 100% 67%;
+    --chart-4: 262 100% 71%;
+    --chart-5: 0 72% 58%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s linear infinite;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient 8s ease infinite;
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-effect-dark {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent;
+  }
+
+  .border-gradient {
+    border-image: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary))) 1;
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(var(--primary-rgb, 74, 123, 255), 0.3);
+  }
+
+  .shadow-glow-lg {
+    box-shadow: 0 0 40px rgba(var(--primary-rgb, 74, 123, 255), 0.4);
+  }
+
+  @keyframes pulse-slow {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 5px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+  }
 }
