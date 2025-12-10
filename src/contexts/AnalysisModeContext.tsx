@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AnalysisModeContextType, AnalysisModeChoice, AnalysisStep } from '@/types/analysis';
 import { analysisSteps } from '@/lib/analysis-steps';
@@ -24,6 +25,7 @@ const AnalysisModeContext = createContext<AnalysisModeContextType | undefined>(u
 export function AnalysisModeProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
   
   const [enabled, setEnabled] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
@@ -582,6 +584,12 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
           // para prevenir novas tentativas
           setLoginFailed(false);
           
+          // PRIMEIRO: Setar os dados do usuário da sessão no estado global (React Query)
+          // Isso garante que todos os componentes que usam useAuth() recebam os dados imediatamente
+          if (loginResponse.user) {
+            queryClient.setQueryData(['session-user'], loginResponse.user);
+          }
+          
           // Aguardar um pouco para garantir que o React Query reconhece o novo token
           // e faz a requisição /me antes de navegar
           await new Promise(resolve => setTimeout(resolve, 800));
@@ -726,6 +734,12 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
           // Se sucesso, resetar flag de falha mas MANTER loginAttemptedRef = true
           // para prevenir novas tentativas
           setLoginFailed(false);
+          
+          // PRIMEIRO: Setar os dados do usuário da sessão no estado global (React Query)
+          // Isso garante que todos os componentes que usam useAuth() recebam os dados imediatamente
+          if (loginResponse.user) {
+            queryClient.setQueryData(['session-user'], loginResponse.user);
+          }
           
           // Aguardar um pouco para garantir que o React Query reconhece o novo token
           // e faz a requisição /me antes de navegar

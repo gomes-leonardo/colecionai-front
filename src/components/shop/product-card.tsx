@@ -63,22 +63,20 @@ export function ProductCard({ product }: ProductCardProps) {
                     </h3>
                 </CardHeader>
 
-                <CardContent className="p-4 pt-0 mt-auto">
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <p className="text-xs text-muted-foreground font-medium mb-0.5">
-                                {isAuction ? 'Lance Atual' : 'Preço'}
-                            </p>
-                            <p className={cn("text-lg font-bold", isAuction ? "text-accent" : "text-primary")}>
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
-                            </p>
-                        </div>
+                <CardContent className="p-4 space-y-2">
+                    <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                        {product.name}
+                    </h3>
+                    <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold text-primary">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price / 100)}
+                        </span>
+                    </div>
                         {isAuction && (
                             <div className="text-xs text-muted-foreground text-right">
                                 <p>{product.auction?.bids} lances</p>
                             </div>
                         )}
-                    </div>
                 </CardContent>
 
                 <CardFooter className="p-4 pt-0">

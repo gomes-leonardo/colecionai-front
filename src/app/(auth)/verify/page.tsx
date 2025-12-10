@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { verifyEmail, resendVerificationToken, login } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 import { OtpInput } from '@/components/ui/otp-input';
@@ -12,6 +12,7 @@ import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
 
 function VerifyContent() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const password = searchParams.get('password'); // Senha passada via URL após registro
@@ -65,8 +66,13 @@ function VerifyContent() {
           setStatus('logging-in');
           const loginResponse = await login({ email, password });
           
-          // Token é salvo automaticamente em cookie httpOnly pelo backend
-          // Salvar apenas dados do usuário no localStorage para cache
+          // PRIMEIRO: Setar os dados do usuário da sessão no estado global (React Query)
+          // Isso garante que todos os componentes que usam useAuth() recebam os dados imediatamente
+          if (loginResponse.user) {
+            queryClient.setQueryData(['session-user'], loginResponse.user);
+          }
+          
+          // Depois: Salvar no localStorage apenas para cache/UX (opcional)
           if (loginResponse.user) {
             localStorage.setItem('colecionai.user', JSON.stringify(loginResponse.user));
           }

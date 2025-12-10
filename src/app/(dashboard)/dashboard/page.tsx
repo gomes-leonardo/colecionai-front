@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
-
+  
   if (isLoading) {
     return (
       <div className="space-y-8">
@@ -29,7 +29,15 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Visão Geral</h1>
-          <p className="text-muted-foreground">Bem-vindo de volta, Colecionador.</p>
+          <p className="text-muted-foreground">
+            {user?.name ? (
+              <>Bem-vindo de volta, {user.name}.</>
+            ) : (
+              <>
+                Bem-vindo de volta, <span className="inline-block h-5 w-32 align-middle animate-pulse rounded-md bg-muted/50" />.
+              </>
+            )}
+          </p>
         </div>
         <div className="flex gap-3">
           <Link href="/announce">

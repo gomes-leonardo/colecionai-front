@@ -14,7 +14,7 @@ import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function MyAdsPage() {
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -37,7 +37,7 @@ export default function MyAdsPage() {
         throw err;
       }
     },
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!user,
   });
 
   const { mutateAsync: removeProduct } = useMutation({

@@ -111,7 +111,7 @@ export function SidebarContent() {
             <p className="text-sm font-medium text-foreground truncate">
               {userName}
             </p>
-            <p className="text-xs text-muted-foreground truncate">Colecionador</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email || ''}</p>
           </div>
         </div>
         <Button 

@@ -39,7 +39,7 @@ export async function getProducts(filters: GetProductsFilters | number = 1): Pro
 }
 
 export async function getMyProducts() {
-  const response = await api.get<Product[]>("/products/me");
+  const response = await api.get<Product[]>(`/products/me`);
   return response.data;
 }
 

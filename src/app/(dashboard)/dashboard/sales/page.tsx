@@ -55,7 +55,7 @@ export default function SalesPage() {
   const { data: userProducts, isLoading } = useQuery({
     queryKey: ['my-products'],
     queryFn: () => getMyProducts(),
-    enabled: !!user?.id,
+    enabled: !!user,
   });
 
   const { mutateAsync: removeProduct, isPending: isDeleting } = useMutation({
@@ -180,9 +180,9 @@ export default function SalesPage() {
         <CardContent>
           {isLoading ? (
              <div className="space-y-4">
-               <Skeleton className="h-16 w-full bg-muted" />
-               <Skeleton className="h-16 w-full bg-muted" />
-               <Skeleton className="h-16 w-full bg-muted" />
+               <Skeleton className="h-16 w-full" />
+               <Skeleton className="h-16 w-full" />
+               <Skeleton className="h-16 w-full" />
              </div>
           ) : userProducts?.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
@@ -229,14 +229,14 @@ export default function SalesPage() {
                     </div>
                     {product.name}
                   </div>
-                  <div className="col-span-3 text-emerald-500 font-bold">
+                  <div className="col-span-3 text-primary font-bold">
                     R$ {(product.price / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </div>
-                  <div className="col-span-3 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="col-span-3 flex justify-end gap-2">
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="text-muted-foreground hover:text-primary hover:bg-primary/10"
+                      className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
                       onClick={() => {
                         setEditingProduct(product);
                         setIsEditOpen(true);

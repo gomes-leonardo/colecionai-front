@@ -105,7 +105,7 @@ export default function ProductDetailsPage() {
   // Properties not in Product type - preventing build errors
   const isAuction = false; 
   const auctionBids = 0;
-  const sellerName = "Vendedor"; // Placeholder as Product type only has user_id
+  const sellerName = product.authorName || "Vendedor";
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareTitle = product?.name || 'Produto';
@@ -285,7 +285,7 @@ export default function ProductDetailsPage() {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Vendido por</p>
-                            <p className="font-bold text-foreground">@{sellerName}</p>
+                            <p className="font-bold text-foreground">{sellerName}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">

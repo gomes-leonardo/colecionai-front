@@ -138,17 +138,12 @@ export function AuctionsInfoModal({
           >
             Fechar
           </Button>
-          <Button
-            variant="primary"
-            asChild
-            onClick={() => onOpenChange(false)}
-            className="gap-2"
-          >
-            <Link href="/auctions">
+          <Link href="/auctions" onClick={() => onOpenChange(false)}>
+            <Button variant="primary" className="flex items-center gap-2 w-full">
               Ver Leilões
               <ArrowRight className="w-4 h-4" />
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </DialogFooter>
       </DialogContent>
     </Dialog>

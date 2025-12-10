@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { login, resendVerificationToken } from '@/services/authService';
 import { getMe } from '@/services/userService';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ import { Loader2 } from 'lucide-react'; // Assuming lucide-react is available, e
 
 export default function LoginPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isSuccess, setIsSuccess] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [pendingEmail, setPendingEmail] = useState('');
@@ -51,19 +52,23 @@ export default function LoginPage() {
   const { mutateAsync: authenticate, isPending } = useMutation({
     mutationFn: login,
     onSuccess: async (data) => {
-      // Token é salvo automaticamente em cookie httpOnly pelo backend
-      // Não precisamos mais salvar manualmente
-      
-      // O backend já retorna o user no response, salvar no localStorage apenas para cache
+      // PRIMEIRO: Setar os dados do usuário da sessão no estado global (React Query)
+      // Isso garante que todos os componentes que usam useAuth() recebam os dados imediatamente
       if (data.user) {
-        localStorage.setItem('colecionai.user', JSON.stringify(data.user));
-        setIsSuccess(true);
-        await new Promise(resolve => setTimeout(resolve, 800));
-        toast.success(`Bem-vindo de volta, ${data.user.name}!`, {
-          description: "Login realizado com sucesso."
-        });
-        router.push('/dashboard');
+        queryClient.setQueryData(['session-user'], data.user);
       }
+      
+      // Depois: Salvar no localStorage apenas para cache/UX (opcional)
+      if (typeof window !== 'undefined' && data.user) {
+        localStorage.setItem('colecionai.user', JSON.stringify(data.user));
+      }
+      
+      setIsSuccess(true);
+      await new Promise(resolve => setTimeout(resolve, 800));
+      toast.success(`Bem-vindo de volta, ${data.user.name}!`, {
+        description: "Login realizado com sucesso."
+      });
+      router.push('/dashboard');
     },
     onError: (error: any) => {
       const errorData = error.response?.data;

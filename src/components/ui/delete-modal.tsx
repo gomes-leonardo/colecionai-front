@@ -31,29 +31,29 @@ export function DeleteModal({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-400 hover:bg-red-950/30">
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all">
             <Trash2 className="w-4 h-4" />
           </Button>
         )}
       </AlertDialogTrigger>
-      <AlertDialogContent className="bg-slate-900 border-slate-800 text-slate-50">
+      <AlertDialogContent className="bg-background border-border">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-full bg-red-500/10 text-red-500">
+            <div className="p-2 rounded-full bg-destructive/10 text-destructive">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            <AlertDialogTitle className="text-xl">{title}</AlertDialogTitle>
+            <AlertDialogTitle className="text-xl text-foreground">{title}</AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-slate-400 text-base">
+          <AlertDialogDescription className="text-muted-foreground text-base">
             {description}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-4">
-          <AlertDialogCancel className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
+          <AlertDialogCancel className="border-border text-foreground hover:bg-muted">
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
-            className="bg-red-600 hover:bg-red-700 text-white border-none"
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground border-none"
             onClick={(e) => {
               e.preventDefault();
               onConfirm();

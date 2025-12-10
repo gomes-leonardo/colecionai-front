@@ -218,7 +218,7 @@ export default function Home() {
                       <CardContent className="p-4">
                         <h3 className="font-semibold text-textPrimary mb-2 line-clamp-2 group-hover:text-primary transition-colors duration-200">{product.name}</h3>
                         <p className="text-2xl font-bold text-primary mb-2">
-                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price)}
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price / 100)}
                         </p>
                         <div className="flex items-center gap-2">
                           <Badge variant="secondary" className="text-xs">

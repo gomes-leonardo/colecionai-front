@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getMe } from '@/services/userService';
 import { AxiosError } from 'axios';
+import { User } from '@/types';
 
 export function useAuth(requireAuth: boolean = true) {
   const router = useRouter();
@@ -12,13 +13,16 @@ export function useAuth(requireAuth: boolean = true) {
   const redirectAttemptedRef = useRef(false);
   const queryClient = useQueryClient();
   // Com cookies httpOnly, não podemos verificar se há token no frontend
-  // Vamos sempre tentar fazer a requisição e deixar o backend validar
+  // O React Query vai usar os dados em cache se estiverem disponíveis (setados após login)
+  // Caso contrário, faz a requisição /me para buscar os dados
   const { data: user, isError, isLoading, error } = useQuery({
     queryKey: ['session-user'],
     queryFn: () => getMe(),
     retry: false,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    // Sempre habilitado - cookies são enviados automaticamente
+    retryOnMount: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes - dados ficam "frescos" por 5 minutos
+    // Sempre habilitado para que navbar e outros componentes possam saber se há usuário logado
+    // Mas quando requireAuth=false, não vai redirecionar se falhar
     enabled: true,
   });
   
@@ -49,11 +53,13 @@ export function useAuth(requireAuth: boolean = true) {
     
     // Verificar se precisa redirecionar
     // IMPORTANTE: 
+    // - Não redirecionar se requireAuth é false (páginas públicas como home)
     // - Não redirecionar se está carregando (aguarda a requisição /me completar)
     // - Redirecionar apenas se: não há token OU houve erro de autenticação (401)
     // - Se há token mas ainda não tem user, aguardar (pode estar carregando ainda)
     const isAxiosError = error instanceof AxiosError;
-    const needsRedirect = !hasToken || (isError && hasToken && isAxiosError && error.response?.status === 401);
+    const is401Error = isAxiosError && error.response?.status === 401;
+    const needsRedirect = requireAuth && (!hasToken || (isError && hasToken && is401Error));
     
     if (needsRedirect) {
       redirectAttemptedRef.current = true;
@@ -67,7 +73,7 @@ export function useAuth(requireAuth: boolean = true) {
       // Usar replace para evitar adicionar ao histórico
       router.replace('/login');
     }
-  }, [user, isError, isLoading, router, requireAuth, hasToken, pathname]);
+  }, [user, isError, isLoading, router, requireAuth, hasToken, pathname, error]);
 
   return { user, isAuthenticated: !!user && !isError, isLoading };
 }

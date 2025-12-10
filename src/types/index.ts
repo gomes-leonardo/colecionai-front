@@ -36,6 +36,7 @@ export interface Product {
   category: ProductCategory;
   condition: ProductCondition;
   user_id: string;
+  authorName?: string;
   banner?: string | null;
   created_at: string;
   updated_at: string;
