@@ -314,30 +314,58 @@ body.analysis-mode-enabled::before {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Permitir interação apenas com elementos destacados e HUD */
+/* Desabilitar TODAS as interações quando modo análise está ativo */
 body.analysis-mode-enabled * {
   pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
-.analysis-highlight,
-.analysis-highlight *,
-.analysis-spotlight,
-.analysis-spotlight *,
-[class*="analysis-hud"],
-[class*="analysis-hud"] *,
-button,
-a,
-input,
-textarea,
-select {
-  pointer-events: auto !important;
-}
-
-/* Análise HUD sempre interativo */
+/* Permitir interação APENAS no HUD (mesmo quando minimizado) */
 .analysis-hud-panel,
 .analysis-hud-panel * {
   pointer-events: auto !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+  -ms-user-select: auto !important;
   z-index: 100 !important;
+}
+
+/* NÃO permitir interação em elementos destacados - apenas visual */
+.analysis-highlight,
+.analysis-highlight * {
+  pointer-events: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Overlay de segurança - sempre cobre tudo quando modo análise está ativo */
+/* Bloqueia TODOS os cliques, mesmo quando HUD está minimizado */
+body.analysis-mode-enabled::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.01); /* Quase invisível mas bloqueia cliques */
+  z-index: 99998 !important; /* Muito alto, mas abaixo do HUD (100000) */
+  pointer-events: auto !important; /* Bloqueia todos os cliques */
+  /* Sempre visível, mesmo em diferentes tamanhos de tela */
+  width: 100vw !important;
+  height: 100vh !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+/* Permitir cliques apenas no HUD (z-index acima do overlay de segurança) */
+.analysis-hud-panel {
+  position: relative;
+  z-index: 100000 !important; /* Acima do overlay de segurança */
 }
 
 /* HUD NUNCA comprime o conteúdo - funciona como overlay absoluto */
@@ -389,9 +417,13 @@ body.analysis-mode-enabled main {
     width: 100% !important; /* Garantir largura total */
   }
   
-  /* Garantir que o conteúdo seja acessível quando minimizado */
+  /* NÃO permitir interações mesmo quando minimizado - modo análise sempre bloqueia */
   body.analysis-mode-enabled.analysis-hud-mobile.analysis-hud-minimized main * {
-    pointer-events: auto !important;
+    pointer-events: none !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
   }
   
   body.analysis-mode-enabled.analysis-hud-mobile main {

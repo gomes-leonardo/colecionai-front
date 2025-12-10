@@ -6,7 +6,7 @@ export const analysisSteps: AnalysisStep[] = [
     id: 'intro-landing',
     route: '/',
     title: 'Bem-vindo ao Modo Análise',
-    subtitle: 'Passo 1 de 13',
+    subtitle: 'Passo 1 de 25',
     description: `O Colecionaí é um marketplace acadêmico de itens colecionáveis. No modo análise, você vai percorrer telas como login e cadastro, entendendo quais validações existem, quais endpoints são chamados e como as regras de negócio foram implementadas.
 
 Este projeto foi desenvolvido com foco em demonstrar boas práticas de engenharia de software, arquitetura limpa e tecnologias modernas.`,
@@ -47,7 +47,7 @@ Este projeto foi desenvolvido com foco em demonstrar boas práticas de engenhari
     id: 'navigate-login',
     route: '/login',
     title: 'Tela de Login',
-    subtitle: 'Passo 2 de 13',
+    subtitle: 'Passo 2 de 25',
     description: `Agora vamos explorar o fluxo de autenticação. Esta tela permite que usuários existentes façam login no sistema usando email e senha.
 
 O processo de autenticação é stateless, utilizando JWT (JSON Web Tokens) para manter a sessão do usuário de forma segura.`,
@@ -60,7 +60,7 @@ O processo de autenticação é stateless, utilizando JWT (JSON Web Tokens) para
 3. Envia requisição para API
 4. Backend valida credenciais
 5. Retorna JWT token + dados do usuário
-6. Token é armazenado em localStorage
+6. Token é armazenado em cookies httpOnly com credentials
 7. Redirecionamento para dashboard`,
   },
 
@@ -69,7 +69,7 @@ O processo de autenticação é stateless, utilizando JWT (JSON Web Tokens) para
     id: 'login-email-field',
     route: '/login',
     title: 'Campo de Email',
-    subtitle: 'Passo 3 de 13',
+    subtitle: 'Passo 3 de 25',
     description: `Este campo recebe o endereço de email do usuário. É validado no frontend para garantir formato correto antes de enviar para o servidor.
 
 A validação acontece em tempo real usando Zod, uma biblioteca de validação de schemas TypeScript.`,
@@ -91,7 +91,7 @@ A validação acontece em tempo real usando Zod, uma biblioteca de validação d
     id: 'login-password-field',
     route: '/login',
     title: 'Campo de Senha',
-    subtitle: 'Passo 4 de 13',
+    subtitle: 'Passo 4 de 25',
     description: `Campo para inserir a senha do usuário. A senha é enviada de forma segura via HTTPS e nunca é armazenada em texto plano no backend.
 
 O sistema usa bcrypt para hash de senhas, garantindo que mesmo em caso de vazamento de dados, as senhas permaneçam protegidas.`,
@@ -113,10 +113,10 @@ O sistema usa bcrypt para hash de senhas, garantindo que mesmo em caso de vazame
     id: 'login-submit',
     route: '/login',
     title: 'Autenticação',
-    subtitle: 'Passo 5 de 13',
+    subtitle: 'Passo 5 de 25',
     description: `Ao clicar em "Entrar", os dados são enviados para o backend que valida as credenciais e retorna um token JWT se tudo estiver correto.
 
-O token JWT contém informações do usuário codificadas e assinadas, permitindo autenticação stateless em requisições futuras.`,
+O token JWT contém informações do usuário codificadas e assinadas, permitindo autenticação stateless em requisições futuras. O token é armazenado em cookies httpOnly com credentials para maior segurança.`,
     highlightSelector: 'button[type="submit"]',
     technicalNotes: `**Request:**
 \`\`\`json
@@ -150,7 +150,7 @@ POST /sessions
     id: 'navigate-register',
     route: '/register',
     title: 'Tela de Cadastro',
-    subtitle: 'Passo 6 de 13',
+    subtitle: 'Passo 6 de 25',
     description: `Esta tela permite que novos usuários criem uma conta no sistema. O processo de cadastro inclui validações rigorosas e envio de email de verificação.
 
 Após o cadastro, o usuário precisa verificar seu email antes de poder fazer login.`,
@@ -172,7 +172,7 @@ Após o cadastro, o usuário precisa verificar seu email antes de poder fazer lo
     id: 'register-name-field',
     route: '/register',
     title: 'Campo de Nome',
-    subtitle: 'Passo 7 de 13',
+    subtitle: 'Passo 7 de 25',
     description: `O nome do usuário é usado para personalização da experiência e identificação no sistema.
 
 Este campo aceita nomes completos e é armazenado exatamente como digitado (preservando capitalização).`,
@@ -194,7 +194,7 @@ Este campo aceita nomes completos e é armazenado exatamente como digitado (pres
     id: 'register-email-field',
     route: '/register',
     title: 'Campo de Email (Cadastro)',
-    subtitle: 'Passo 8 de 13',
+    subtitle: 'Passo 8 de 25',
     description: `O email é usado como identificador único do usuário no sistema. Deve ser um endereço válido pois será enviado um link de verificação.
 
 O sistema garante que cada email só pode ser cadastrado uma vez.`,
@@ -232,7 +232,7 @@ O sistema garante que cada email só pode ser cadastrado uma vez.`,
     id: 'register-password-fields',
     route: '/register',
     title: 'Campos de Senha',
-    subtitle: 'Passo 9 de 13',
+    subtitle: 'Passo 9 de 25',
     description: `O usuário deve criar uma senha e confirmá-la para evitar erros de digitação. A senha é validada quanto à força e complexidade.
 
 As senhas são sempre hasheadas antes de serem armazenadas no banco de dados.`,
@@ -259,7 +259,7 @@ As senhas são sempre hasheadas antes de serem armazenadas no banco de dados.`,
     id: 'email-verification',
     route: '/verify',
     title: 'Verificação de Email',
-    subtitle: 'Passo 10 de 13',
+    subtitle: 'Passo 10 de 25',
     description: `Após o cadastro, o usuário recebe um email com um código de verificação. Esta etapa garante que o email fornecido é válido e pertence ao usuário.
 
 A verificação é obrigatória antes de poder fazer login no sistema.`,
@@ -294,7 +294,7 @@ A verificação é obrigatória antes de poder fazer login no sistema.`,
     id: 'forgot-password',
     route: '/forgot-password',
     title: 'Recuperação de Senha',
-    subtitle: 'Passo 11 de 13',
+    subtitle: 'Passo 11 de 25',
     description: `Sistema de recuperação de senha permite que usuários redefinam suas senhas através de um link enviado por email.
 
 O processo utiliza BullMQ para processar o envio de emails de forma assíncrona, garantindo que a requisição não trave aguardando o envio.`,
@@ -351,7 +351,7 @@ O processo utiliza BullMQ para processar o envio de emails de forma assíncrona,
     id: 'analysis-auto-login',
     route: '/login',
     title: 'Autenticação Automática',
-    subtitle: 'Passo 12 de 13',
+    subtitle: 'Passo 12 de 25',
     description: `Para explorar as áreas protegidas do sistema (como o dashboard), vamos fazer login automaticamente com credenciais de demonstração.
 
 Isso permite que você veja as funcionalidades completas sem precisar criar uma conta real.`,
@@ -362,7 +362,7 @@ Isso permite que você veja as funcionalidades completas sem precisar criar uma 
 **Processo:**
 1. Sistema detecta que precisa de autenticação
 2. Faz login automático com credenciais de teste
-3. Armazena token JWT no localStorage
+3. Armazena token JWT em cookies httpOnly com credentials
 4. Redireciona para dashboard
 
 **Nota:** Você precisará criar este usuário no backend antes de usar o modo análise.`,
@@ -374,12 +374,12 @@ Isso permite que você veja as funcionalidades completas sem precisar criar uma 
     id: 'dashboard-overview',
     route: '/dashboard',
     title: 'Dashboard do Usuário',
-    subtitle: 'Passo 13 de 13',
+    subtitle: 'Passo 13 de 25',
     description: `Após autenticado, o usuário acessa o dashboard onde pode gerenciar seus anúncios, ver estatísticas e acessar configurações.
 
-O dashboard é uma área protegida que requer autenticação válida (token JWT).`,
+O dashboard é uma área protegida que requer autenticação válida (token JWT armazenado em cookies httpOnly).`,
     technicalNotes: `**Proteção de Rota:**
-- Middleware verifica JWT token
+- Middleware verifica JWT token dos cookies
 - Redireciona para /login se não autenticado
 - Busca dados do usuário via GET /me
 
@@ -400,7 +400,7 @@ O dashboard é uma área protegida que requer autenticação válida (token JWT)
     id: 'create-product',
     route: '/announce',
     title: 'Criar Anúncio de Produto',
-    subtitle: 'Passo 13 de 24',
+    subtitle: 'Passo 14 de 25',
     description: `Usuários autenticados podem criar anúncios de produtos colecionáveis para venda ou leilão.
 
 O formulário de criação inclui validações rigorosas e upload de imagens usando Multer no backend.`,
@@ -429,7 +429,7 @@ O formulário de criação inclui validações rigorosas e upload de imagens usa
     id: 'image-upload',
     route: '/announce',
     title: 'Upload de Imagens com Multer',
-    subtitle: 'Passo 14 de 24',
+    subtitle: 'Passo 15 de 25',
     description: `O sistema permite upload de 1 imagem por produto. As imagens são processadas no backend usando Multer.
 
 Validações garantem qualidade e segurança dos arquivos enviados.`,
@@ -477,7 +477,7 @@ const upload = multer({
     id: 'product-listing',
     route: '/',
     title: 'Listagem e Filtros de Produtos',
-    subtitle: 'Passo 15 de 24',
+    subtitle: 'Passo 16 de 25',
     description: `A página inicial exibe todos os produtos disponíveis com sistema de filtros avançado.
 
 Os produtos são cacheados em Redis para melhor performance.`,
@@ -509,7 +509,7 @@ Os produtos são cacheados em Redis para melhor performance.`,
     id: 'product-details',
     route: '/',
     title: 'Página de Detalhes do Produto',
-    subtitle: 'Passo 16 de 24',
+    subtitle: 'Passo 17 de 25',
     description: `Ao clicar em um produto, o usuário é levado para uma página com informações completas, galeria de imagens e opções de compra.
 
 **Status:** Parcialmente implementado.`,
@@ -537,7 +537,7 @@ Os produtos são cacheados em Redis para melhor performance.`,
     id: 'shopping-cart',
     route: '/',
     title: 'Carrinho de Compras',
-    subtitle: 'Passo 17 de 24',
+    subtitle: 'Passo 18 de 25',
     description: `O carrinho permite adicionar múltiplos produtos antes de finalizar a compra.
 
 Implementado com Context API para gerenciamento de estado global.`,
@@ -575,7 +575,7 @@ interface CartItem {
     id: 'checkout-process',
     route: '/',
     title: 'Processo de Checkout',
-    subtitle: 'Passo 18 de 24',
+    subtitle: 'Passo 19 de 25',
     description: `O checkout guia o usuário através de múltiplas etapas para finalizar a compra.
 
 **Status:** Planejado (não implementado).`,
@@ -611,7 +611,7 @@ interface CartItem {
     id: 'auction-system',
     route: '/auctions',
     title: 'Sistema de Leilões',
-    subtitle: 'Passo 19 de 24',
+    subtitle: 'Passo 20 de 25',
     description: `Além de vendas diretas, o Colecionaí suporta leilões de itens raros.
 
 Usuários podem dar lances em tempo real com WebSockets.
@@ -660,7 +660,7 @@ io.to(\`auction-\${auctionId}\`).emit('new-bid', {
     id: 'realtime-notifications',
     route: '/dashboard',
     title: 'Notificações em Tempo Real',
-    subtitle: 'Passo 20 de 24',
+    subtitle: 'Passo 21 de 25',
     description: `Sistema de notificações usando WebSockets para alertar usuários sobre eventos importantes.
 
 **Status:** Planejado (não implementado).`,
@@ -706,7 +706,7 @@ socket.on('notification', (data) => {
     id: 'review-system',
     route: '/',
     title: 'Avaliações e Reputação',
-    subtitle: 'Passo 21 de 24',
+    subtitle: 'Passo 22 de 25',
     description: `Compradores podem avaliar vendedores e produtos após a compra.
 
 Sistema de reputação ajuda a construir confiança na plataforma.
@@ -744,7 +744,7 @@ interface Review {
     id: 'advanced-search',
     route: '/',
     title: 'Busca Avançada e Autocomplete',
-    subtitle: 'Passo 22 de 24',
+    subtitle: 'Passo 23 de 25',
     description: `Sistema de busca com autocomplete, sugestões inteligentes e histórico de pesquisas.
 
 **Status:** Parcialmente implementado (busca básica existe).`,
@@ -773,7 +773,7 @@ interface Review {
     id: 'user-messaging',
     route: '/dashboard',
     title: 'Sistema de Mensagens',
-    subtitle: 'Passo 23 de 24',
+    subtitle: 'Passo 24 de 25',
     description: `Chat direto entre compradores e vendedores para tirar dúvidas sobre produtos.
 
 **Status:** Planejado (não implementado).`,
@@ -802,12 +802,12 @@ interface Review {
 - Report de abuso`,
   },
 
-  // Passo 24 - Tecnologias e Arquitetura Completa
+  // Passo 25 - Tecnologias e Arquitetura Completa
   {
     id: 'complete-architecture',
     route: '/',
     title: 'Arquitetura Completa do Sistema',
-    subtitle: 'Passo 24 de 24',
+    subtitle: 'Passo 25 de 25',
     description: `Visão geral completa de todas as tecnologias, padrões arquiteturais e decisões de design do projeto.
 
 Este é um projeto acadêmico que demonstra domínio de engenharia de software moderna.`,

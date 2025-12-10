@@ -46,8 +46,8 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         try {
           await logout();
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.token');
             localStorage.removeItem('colecionai.user');
+            // Cookie será limpo pelo backend
           }
           toast.warning('Sessão encerrada por segurança', {
             description: 'Um erro foi detectado no modo análise. Você foi deslogado automaticamente por segurança.',
@@ -56,8 +56,8 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         } catch (e) {
           // Ignorar erros de logout, mas garantir limpeza
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.token');
             localStorage.removeItem('colecionai.user');
+            // Cookie será limpo pelo backend
           }
           toast.warning('Sessão encerrada por segurança', {
             description: 'Um erro foi detectado no modo análise. Você foi deslogado automaticamente por segurança.',
@@ -74,8 +74,8 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         try {
           await logout();
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.token');
             localStorage.removeItem('colecionai.user');
+            // Cookie será limpo pelo backend
           }
           toast.warning('Sessão encerrada por segurança', {
             description: 'Um erro foi detectado no modo análise. Você foi deslogado automaticamente por segurança.',
@@ -84,8 +84,8 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         } catch (e) {
           // Ignorar erros de logout, mas garantir limpeza
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.token');
             localStorage.removeItem('colecionai.user');
+            // Cookie será limpo pelo backend
           }
           toast.warning('Sessão encerrada por segurança', {
             description: 'Um erro foi detectado no modo análise. Você foi deslogado automaticamente por segurança.',
@@ -131,21 +131,31 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
       document.body.classList.add('analysis-mode-enabled');
       
       // Proteção adicional: prevenir interações via JavaScript
+      // IMPORTANTE: Funciona mesmo quando HUD está minimizado
       const preventInteraction = (e: Event) => {
         // Permitir apenas eventos do HUD
         const target = e.target as HTMLElement;
-        if (target.closest('.analysis-hud-panel')) {
+        if (target && target.closest && target.closest('.analysis-hud-panel')) {
           return; // Permitir interação no HUD
         }
-        // Bloquear todas as outras interações
+        // Bloquear TODAS as outras interações, mesmo quando HUD está minimizado
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
+        
+        // Mostrar toast de aviso se for um clique
+        if (e.type === 'click' || e.type === 'mousedown') {
+          toast.warning('Modo Análise Ativo', {
+            description: 'Interações bloqueadas. Use o HUD para navegar.',
+            duration: 3000,
+          });
+        }
+        
         return false;
       };
       
       // Bloquear vários tipos de eventos
-      const events = ['click', 'mousedown', 'mouseup', 'keydown', 'keypress', 'keyup', 'submit', 'change', 'input', 'focus', 'blur'];
+      const events = ['click', 'mousedown', 'mouseup', 'keydown', 'keypress', 'keyup', 'submit', 'change', 'input', 'focus', 'blur', 'touchstart', 'touchend'];
       events.forEach(eventType => {
         document.addEventListener(eventType, preventInteraction, { capture: true, passive: false });
       });
@@ -537,10 +547,10 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
           setEnabled(false);
           setCurrentStepIndex(0);
           
-          // Limpar qualquer token inválido que possa ter sido criado
+          // Limpar dados do usuário do localStorage
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.token');
             localStorage.removeItem('colecionai.user');
+            // Cookie será limpo pelo backend
           }
           
           // Deslogar usuário de teste em caso de erro
@@ -553,8 +563,8 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
           } catch (e) {
             // Ignorar erros de logout, mas garantir limpeza do localStorage
             if (typeof window !== 'undefined') {
-              localStorage.removeItem('colecionai.token');
               localStorage.removeItem('colecionai.user');
+              // Cookie será limpo pelo backend
             }
             toast.warning('Sessão encerrada por segurança', {
               description: 'Falha no login automático. Você foi deslogado automaticamente por segurança.',
@@ -592,10 +602,10 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         setEnabled(false);
         setCurrentStepIndex(0);
         
-        // Limpar tokens inválidos
+        // Limpar dados do usuário do localStorage
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('colecionai.token');
           localStorage.removeItem('colecionai.user');
+          // Cookie será limpo pelo backend
         }
         
         // Deslogar usuário de teste em caso de erro
@@ -608,8 +618,8 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         } catch (e) {
           // Ignorar erros de logout, mas garantir limpeza do localStorage
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.token');
             localStorage.removeItem('colecionai.user');
+            // Cookie será limpo pelo backend
           }
           toast.warning('Sessão encerrada por segurança', {
             description: 'Erro no login automático. Você foi deslogado automaticamente por segurança.',
@@ -701,10 +711,10 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
           setEnabled(false);
           setCurrentStepIndex(0);
           
-          // Limpar qualquer token inválido que possa ter sido criado
+          // Limpar dados do usuário do localStorage
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.token');
             localStorage.removeItem('colecionai.user');
+            // Cookie será limpo pelo backend
           }
           
           // Mostrar modal de erro
@@ -737,10 +747,10 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         setEnabled(false);
         setCurrentStepIndex(0);
         
-        // Limpar tokens inválidos
+        // Limpar dados do usuário do localStorage
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('colecionai.token');
           localStorage.removeItem('colecionai.user');
+          // Cookie será limpo pelo backend
         }
         
         // Mostrar modal de erro
@@ -769,23 +779,18 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
 
   const enable = useCallback(async () => {
     // Verificar se há usuário logado e deslogar antes de iniciar modo análise
-    const hasToken = typeof window !== 'undefined' 
-      ? !!localStorage.getItem('colecionai.token')
-      : false;
-    
-    if (hasToken) {
-      try {
-        // Deslogar o usuário atual antes de iniciar modo análise
-        await logout();
-        toast.info('Usuário deslogado', {
-          description: 'O modo análise requer autenticação própria. Você foi deslogado automaticamente.',
-        });
-      } catch (error) {
-        // Se falhar, pelo menos limpa o localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('colecionai.token');
-          localStorage.removeItem('colecionai.user');
-        }
+    // Com cookies httpOnly, não podemos verificar diretamente, mas tentamos fazer logout
+    // para garantir que não há sessão anterior
+    try {
+      await logout();
+      toast.info('Sessão limpa', {
+        description: 'O modo análise requer autenticação própria. Qualquer sessão anterior foi encerrada.',
+      });
+    } catch (error) {
+      // Se falhar, pelo menos limpa o localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('colecionai.user');
+        // Cookie será limpo pelo backend
       }
     }
     
@@ -837,8 +842,8 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
     } catch (error) {
       // Se falhar, pelo menos limpa o localStorage
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('colecionai.token');
         localStorage.removeItem('colecionai.user');
+        // Cookie será limpo pelo backend
       }
       toast.info('Sessão encerrada', {
         description: 'Você foi deslogado automaticamente ao sair do modo análise.',

@@ -147,15 +147,16 @@ export function AnalysisHUD() {
 
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
   
-  // Verificar se usuário está autenticado (tem token)
-  const isAuthenticated = typeof window !== 'undefined' 
-    ? !!localStorage.getItem('colecionai.token')
-    : false;
+  // Verificar se usuário está autenticado
+  // Com cookies httpOnly, não podemos verificar diretamente
+  // Assumimos que está autenticado se o modo análise está ativo (já fez auto-login)
+  const isAuthenticated = enabled;
   
   // Mostrar blur apenas no primeiro passo
   const showBlurOverlay = currentStepIndex === 0;
 
   const handleOutsideClick = () => {
+    // Sempre mostrar confirmação ao clicar fora do HUD
     setShowExitConfirm(true);
   };
 

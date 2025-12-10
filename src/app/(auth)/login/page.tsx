@@ -51,10 +51,10 @@ export default function LoginPage() {
   const { mutateAsync: authenticate, isPending } = useMutation({
     mutationFn: login,
     onSuccess: async (data) => {
-      if (data?.token) {
-        localStorage.setItem('colecionai.token', data.token);
-      }
-      // O backend já retorna o user no response, não precisa chamar getMe novamente
+      // Token é salvo automaticamente em cookie httpOnly pelo backend
+      // Não precisamos mais salvar manualmente
+      
+      // O backend já retorna o user no response, salvar no localStorage apenas para cache
       if (data.user) {
         localStorage.setItem('colecionai.user', JSON.stringify(data.user));
         setIsSuccess(true);

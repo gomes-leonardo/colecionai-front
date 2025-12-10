@@ -14,11 +14,12 @@ export async function register(data: RegisterRequest) {
 export async function logout() {
   try {
     await api.post("/logout");
+    // Backend deve limpar o cookie httpOnly
   } finally {
-    // Sempre limpa o localStorage, mesmo se a requisição falhar
+    // Limpa dados do usuário do localStorage
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('colecionai.token');
       localStorage.removeItem('colecionai.user');
+      // Cookie será limpo pelo backend
     }
   }
 }

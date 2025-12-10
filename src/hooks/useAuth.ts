@@ -11,48 +11,19 @@ export function useAuth(requireAuth: boolean = true) {
   const pathname = usePathname();
   const redirectAttemptedRef = useRef(false);
   const queryClient = useQueryClient();
-  const [hasToken, setHasToken] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return !!localStorage.getItem('colecionai.token');
-  });
-  
-  // Atualizar hasToken quando o token for alterado
-  useEffect(() => {
-    const checkToken = () => {
-      if (typeof window !== 'undefined') {
-        const token = !!localStorage.getItem('colecionai.token');
-        setHasToken(token);
-      }
-    };
-
-    // Verificar token inicialmente e quando o evento for disparado
-    checkToken();
-
-    const handleAuthUpdate = () => {
-      checkToken();
-      // Invalidar query para forçar nova requisição com o novo token
-      queryClient.invalidateQueries({ queryKey: ['session-user'] });
-    };
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('auth-token-updated', handleAuthUpdate);
-      // Também escutar mudanças no localStorage
-      window.addEventListener('storage', checkToken);
-      
-      return () => {
-        window.removeEventListener('auth-token-updated', handleAuthUpdate);
-        window.removeEventListener('storage', checkToken);
-      };
-    }
-  }, [queryClient]);
-  
+  // Com cookies httpOnly, não podemos verificar se há token no frontend
+  // Vamos sempre tentar fazer a requisição e deixar o backend validar
   const { data: user, isError, isLoading, error } = useQuery({
     queryKey: ['session-user'],
     queryFn: () => getMe(),
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: hasToken, // Só faz a requisição se houver token
+    // Sempre habilitado - cookies são enviados automaticamente
+    enabled: true,
   });
+  
+  // hasToken agora é baseado na presença do usuário (se a requisição /me funcionou)
+  const hasToken = !!user && !isError;
 
   useEffect(() => {
     // Reset flag quando pathname muda
@@ -87,10 +58,10 @@ export function useAuth(requireAuth: boolean = true) {
     if (needsRedirect) {
       redirectAttemptedRef.current = true;
       
-      // Limpa dados inválidos
+      // Limpa dados do usuário do localStorage (se houver)
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('colecionai.token');
         localStorage.removeItem('colecionai.user');
+        // Cookie será limpo pelo backend no logout
       }
       
       // Usar replace para evitar adicionar ao histórico

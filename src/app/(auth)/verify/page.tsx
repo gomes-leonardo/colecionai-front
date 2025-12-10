@@ -65,8 +65,8 @@ function VerifyContent() {
           setStatus('logging-in');
           const loginResponse = await login({ email, password });
           
-          // Salvar token e dados do usuário
-          localStorage.setItem('colecionai.token', loginResponse.token);
+          // Token é salvo automaticamente em cookie httpOnly pelo backend
+          // Salvar apenas dados do usuário no localStorage para cache
           if (loginResponse.user) {
             localStorage.setItem('colecionai.user', JSON.stringify(loginResponse.user));
           }

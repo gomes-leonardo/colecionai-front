@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { logout } from '@/services/authService';
 
 // Função para gerar iniciais do nome
 function getInitials(name: string | undefined | null): string {
@@ -116,10 +117,16 @@ export function SidebarContent() {
         <Button 
           variant="ghost" 
           className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10"
-          onClick={() => {
-            localStorage.removeItem('colecionai.token');
-            localStorage.removeItem('colecionai.user');
-            window.location.href = '/login';
+          onClick={async () => {
+            try {
+              await logout();
+            } catch (error) {
+              console.error("Erro ao fazer logout:", error);
+            } finally {
+              // Cookie será limpo pelo backend
+              localStorage.removeItem('colecionai.user');
+              window.location.href = '/login';
+            }
           }}
         >
           <LogOut className="w-5 h-5" />

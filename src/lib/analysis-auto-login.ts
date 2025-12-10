@@ -24,11 +24,10 @@ export async function performAnalysisLogin(): Promise<LoginResponse | null> {
     
     loginInProgress = false;
     
-    // Salvar token e user no localStorage, exatamente como no login normal
+    // Token é salvo automaticamente em cookie httpOnly pelo backend
+    // Salvar apenas dados do usuário no localStorage para cache
     if (response.token) {
       if (typeof window !== 'undefined') {
-        localStorage.setItem('colecionai.token', response.token);
-        
         // Salvar dados do usuário se retornados
         if (response.user) {
           localStorage.setItem('colecionai.user', JSON.stringify(response.user));

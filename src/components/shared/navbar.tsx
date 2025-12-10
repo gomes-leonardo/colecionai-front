@@ -51,7 +51,7 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     } finally {
-      localStorage.removeItem('colecionai.token');
+      // Cookie será limpo pelo backend
       localStorage.removeItem('colecionai.user');
       window.location.href = '/login';
     }

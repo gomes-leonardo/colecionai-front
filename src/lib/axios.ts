@@ -9,15 +9,11 @@ export const api = axios.create({
 });
 
 // INTERCEPTOR DE REQUISIÇÃO (Sai do Front -> Vai pro Back)
+// Com cookies httpOnly, o token é enviado automaticamente via cookies
+// Não precisamos mais injetar manualmente no header Authorization
 api.interceptors.request.use((config) => {
-  // Tenta pegar o token do localStorage
-  const token = typeof window !== 'undefined' ? localStorage.getItem('colecionai.token') : null;
-
-  // Se tiver token válido, injeta no cabeçalho Authorization
-  if (token && token !== "undefined" && token !== "null") {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
+  // Cookies são enviados automaticamente com withCredentials: true
+  // O backend deve ler o token dos cookies, não do header Authorization
   return config;
 });
 
@@ -38,10 +34,10 @@ api.interceptors.response.use(
   (error) => {
     // Se o erro for 401 (Token inválido/expirado)
     if (error.response?.status === 401) {
-      // Limpar storage
+      // Limpar dados do usuário do localStorage (se houver)
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('colecionai.token');
         localStorage.removeItem('colecionai.user');
+        // Cookie será limpo pelo backend no logout
         
         // Evitar redirecionamento infinito
         const currentPath = window.location.pathname;
