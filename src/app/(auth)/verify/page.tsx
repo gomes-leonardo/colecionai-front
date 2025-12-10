@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button';
 import { OtpInput } from '@/components/ui/otp-input';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
 
 function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
   const password = searchParams.get('password'); // Senha passada via URL após registro
+  const { enabled: analysisModeEnabled } = useAnalysisMode();
   const [token, setToken] = useState('');
   
   // Timer state
@@ -115,68 +117,72 @@ function VerifyContent() {
   };
 
   return (
-    <div className="w-full space-y-8 animate-fade-in">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-lg">Verifique seu código</h1>
-        <p className="text-zinc-400 text-lg">
+    <div className="w-full space-y-12 sm:space-y-16 animate-fade-in py-4 sm:py-8">
+      <div className="text-center space-y-5 sm:space-y-6">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-black drop-shadow-lg">
+          Verifique seu código
+        </h1>
+        <p className="text-zinc-400 text-base sm:text-lg md:text-xl px-4 sm:px-0 leading-relaxed">
           Digite o código de 6 dígitos que enviamos para {email ? <strong className="text-zinc-300">{email}</strong> : 'seu e-mail'}.
         </p>
       </div>
 
       {(status === 'success' || status === 'logging-in') ? (
-        <div className="space-y-6 text-center animate-scale-in">
-          <div className="mx-auto w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
-            <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="space-y-8 text-center animate-scale-in py-8">
+          <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
+            <svg className="w-10 h-10 sm:w-12 sm:h-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-white">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-white">
             {status === 'logging-in' ? 'Fazendo login...' : 'Sucesso!'}
           </h2>
-          <p className="text-zinc-400">
+          <p className="text-zinc-400 text-base sm:text-lg">
             {status === 'logging-in' ? 'Aguarde um momento...' : 'Preparando seu acesso...'}
           </p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <div className="flex justify-center">
+        <form onSubmit={handleSubmit} className="space-y-12 sm:space-y-16">
+          <div className="flex justify-center px-4 sm:px-0 py-4 sm:py-6">
             <OtpInput 
               value={token} 
               onChange={setToken} 
               length={6} 
-              disabled={isPending}
+              disabled={isPending || analysisModeEnabled}
             />
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 border-none rounded-xl transition-all duration-300"
-            disabled={isPending || token.length < 6}
-            loading={isPending}
-          >
-            {isPending ? 'Verificando...' : 'Verificar'}
-          </Button>
+          <div className="px-4 sm:px-0 space-y-6">
+            <Button 
+              type="submit" 
+              className="w-full h-14 sm:h-16 text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 border-none rounded-xl transition-all duration-300"
+              disabled={isPending || token.length < 6}
+              loading={isPending}
+            >
+              {isPending ? 'Verificando...' : 'Verificar'}
+            </Button>
 
-          <div className="text-center">
-             <button 
-               type="button" 
-               className={cn(
-                 "text-sm transition-colors",
-                 canResend 
-                   ? "text-blue-400 hover:text-blue-300 hover:underline cursor-pointer" 
-                   : "text-zinc-600 cursor-not-allowed"
-               )}
-               onClick={handleResend}
-               disabled={!canResend || isResending}
-             >
-               {isResending ? (
-                 "Enviando..."
-               ) : canResend ? (
-                 "Não recebeu? Reenviar código"
-               ) : (
-                 `Reenviar código em ${timeLeft < 10 ? `0${timeLeft}` : timeLeft}s`
-               )}
-             </button>
+            <div className="text-center pt-4">
+               <button 
+                 type="button" 
+                 className={cn(
+                   "text-sm sm:text-base transition-colors py-3 px-6 rounded-lg inline-block",
+                   canResend 
+                     ? "text-blue-400 hover:text-blue-300 hover:underline cursor-pointer hover:bg-blue-500/10" 
+                     : "text-zinc-600 cursor-not-allowed"
+                 )}
+                 onClick={handleResend}
+                 disabled={!canResend || isResending}
+               >
+                 {isResending ? (
+                   "Enviando..."
+                 ) : canResend ? (
+                   "Não recebeu? Reenviar código"
+                 ) : (
+                   `Reenviar código em ${timeLeft < 10 ? `0${timeLeft}` : timeLeft}s`
+                 )}
+               </button>
+            </div>
           </div>
         </form>
       )}

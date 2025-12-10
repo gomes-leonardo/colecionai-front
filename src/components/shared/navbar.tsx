@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, Plus, LogOut } from 'lucide-react';
+import { Search, Menu, Plus, LogOut, Microscope, Gavel, Info } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { CartSheet } from '@/components/shared/cart-sheet';
 import {
@@ -16,9 +17,33 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from '@/services/authService';
 import { useAuth } from '@/hooks/useAuth';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { AuctionsInfoModal } from '@/components/ui/auctions-info-modal';
 
-export function Navbar() {
+interface NavbarProps {
+  onStartTour?: () => void;
+}
+
+// Função para gerar iniciais do nome
+function getInitials(name: string | undefined | null): string {
+  if (!name) return 'U';
+  
+  const trimmedName = name.trim();
+  const parts = trimmedName.split(/\s+/);
+  
+  if (parts.length === 1) {
+    // Se tem apenas um nome, pega as primeiras 2 letras
+    return trimmedName.substring(0, 2).toUpperCase().padEnd(2, trimmedName[0].toUpperCase());
+  }
+  
+  // Se tem sobrenome, pega primeira letra do nome e primeira do sobrenome
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+export function Navbar({ onStartTour }: NavbarProps = {}) {
   const { user, isAuthenticated } = useAuth(false);
+  const { enabled, enable, disable } = useAnalysisMode();
+  const [showAuctionsInfo, setShowAuctionsInfo] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -32,53 +57,81 @@ export function Navbar() {
     }
   };
 
+  const userInitials = getInitials(user?.name);
+
   return (
-    <nav className="border-b border-border/40 bg-background/95 backdrop-blur-xl sticky top-0 z-50 supports-[backdrop-filter]:bg-background/80 shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="group relative">
-            <span className="font-bold text-xl bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent group-hover:opacity-90 transition-all duration-300 relative z-10">
-              Coleciona<span className="text-primary">í</span>
-            </span>
-            <span className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-secondary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-        </Link>
+    <>
+      <AuctionsInfoModal
+        open={showAuctionsInfo}
+        onOpenChange={setShowAuctionsInfo}
+      />
+
+      <nav className="border-b border-border/80 bg-background/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          {/* Logo com imagem */}
+          <Link href="/" className="group flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img 
+              src="/logo.png" 
+              alt="Colecionaí Logo" 
+              className="h-10 w-10 object-contain"
+            />
+          </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-8">
-          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105 relative group">
-            Garimpar
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-accent group-hover:w-full transition-all duration-300"></span>
-          </Link>
-          <Link href="/auctions" className="text-sm font-medium text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105 relative group">
+        <div className="hidden md:flex items-center gap-3">
+          <Link 
+            href="/auctions"
+            className="text-sm font-medium text-textSecondary hover:text-primary transition-colors duration-200 flex items-center gap-2"
+          >
+            <Gavel className="w-4 h-4" />
             Leilões
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-accent group-hover:w-full transition-all duration-300"></span>
           </Link>
-          <Link href="/dashboard/collections" className="text-sm font-medium text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105 relative group">
-            Coleções
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-accent group-hover:w-full transition-all duration-300"></span>
-          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowAuctionsInfo(true)}
+            className="h-8 w-8 text-textMuted hover:text-primary hover:bg-primary/5 transition-all duration-200"
+            title="Como funcionam os leilões"
+          >
+            <Info className="w-4 h-4" />
+          </Button>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-4">
-          <div className="relative hidden md:block group">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-all duration-300 group-focus-within:scale-110" />
+        <div className="flex items-center gap-3">
+          <div className="relative hidden md:block">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-textMuted pointer-events-none" />
             <input 
               type="text" 
               placeholder="Buscar itens..." 
-              className="bg-muted/50 border border-input rounded-full py-2 pl-10 pr-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 w-64 transition-all duration-300 hover:bg-muted/70 focus:bg-background shadow-sm focus:shadow-md focus:shadow-primary/10"
+              className="bg-backgroundSecondary/80 border border-border/60 rounded-lg py-2 pl-10 pr-4 text-sm text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 w-64 transition-all duration-200 hover:border-border"
             />
           </div>
 
+         
+          {/* Modo Análise Toggle */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => enabled ? disable() : enable()}
+            className="gap-2"
+            title={enabled ? "Sair do Modo Análise" : "Ativar Modo Análise"}
+          >
+            <Microscope className="w-4 h-4" />
+            <span className="hidden lg:inline">
+              {enabled ? 'Sair do Modo Análise' : 'Modo Análise'}
+            </span>
+          </Button>
+
           <CartSheet />
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2" id="auth-section">
             <div className="h-6 w-px bg-border mx-2" />
             
             {isAuthenticated && user ? (
               <>
                 <Link href="/announce">
-                  <Button className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground gap-2 shadow-lg shadow-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/40">
+                  <Button variant="primary" className="gap-2">
                     <Plus className="w-4 h-4" />
                     Anunciar
                   </Button>
@@ -86,34 +139,36 @@ export function Navbar() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-9 w-9 rounded-full ring-2 ring-transparent hover:ring-primary/50 transition-all">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src="/avatars/01.png" alt={user.name} />
-                        <AvatarFallback className="bg-primary/20 text-primary">{user.name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                      <Avatar className="h-9 w-9 border-2 border-primary/20 hover:border-primary/40 transition-colors">
+                        <AvatarImage src={undefined} alt={user.name || 'Usuário'} />
+                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-secondary/20 text-primary font-semibold text-sm">
+                          {userInitials}
+                        </AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-popover border-border text-popover-foreground" align="end" forceMount>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none text-foreground">{user.name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
+                        <p className="text-sm font-medium leading-none">{user.name || 'Usuário'}</p>
+                        <p className="text-xs leading-none text-textSecondary">
                           {user.email}
                         </p>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="cursor-pointer hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">Dashboard</Link>
+                      <Link href="/dashboard" className="cursor-pointer">Dashboard</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/sales" className="cursor-pointer hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">Minhas Vendas</Link>
+                      <Link href="/dashboard/sales" className="cursor-pointer">Minhas Vendas</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard/settings" className="cursor-pointer hover:bg-muted hover:text-foreground focus:bg-muted focus:text-foreground">Configurações</Link>
+                      <Link href="/dashboard/settings" className="cursor-pointer">Configurações</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-border" />
-                    <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer" onClick={handleLogout}>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="text-destructive cursor-pointer" onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Sair</span>
                     </DropdownMenuItem>
@@ -123,12 +178,12 @@ export function Navbar() {
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost" className="text-muted-foreground hover:text-foreground hover:bg-muted/50">
+                  <Button variant="ghost">
                     Entrar
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button className="bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-lg shadow-black/5 transition-all hover:scale-105">
+                  <Button variant="primary">
                     Cadastrar
                   </Button>
                 </Link>
@@ -145,9 +200,26 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent className="bg-background border-border text-foreground">
               <div className="flex flex-col gap-6 mt-8">
-                <Link href="/" className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors">Garimpar</Link>
-                <Link href="/auctions" className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors">Leilões</Link>
-                <Link href="/dashboard/collections" className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors">Coleções</Link>
+                <div className="flex items-center justify-between">
+                  <Link 
+                    href="/auctions"
+                    className="text-lg font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+                  >
+                    <Gavel className="w-5 h-5" />
+                    Leilões
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setShowAuctionsInfo(true);
+                    }}
+                    className="h-8 w-8 text-muted-foreground hover:text-primary"
+                    title="Como funcionam os leilões"
+                  >
+                    <Info className="w-4 h-4" />
+                  </Button>
+                </div>
                 <hr className="border-border" />
                 {isAuthenticated && user ? (
                   <>
@@ -168,5 +240,6 @@ export function Navbar() {
         </div>
       </div>
     </nav>
+    </>
   );
 }

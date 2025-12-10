@@ -21,6 +21,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Flag global para prevenir múltiplos redirecionamentos simultâneos
+let isRedirecting = false;
+
 // INTERCEPTOR DE RESPOSTA (Volta do Back -> Chega no Front)
 api.interceptors.response.use(
   (response) => {
@@ -35,13 +38,30 @@ api.interceptors.response.use(
   (error) => {
     // Se o erro for 401 (Token inválido/expirado)
     if (error.response?.status === 401) {
-      // Limpar storage e redirecionar para login
+      // Limpar storage
       if (typeof window !== 'undefined') {
         localStorage.removeItem('colecionai.token');
         localStorage.removeItem('colecionai.user');
-        // Evitar redirecionamento infinito se já estiver na página de login
-        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-          window.location.href = '/login';
+        
+        // Evitar redirecionamento infinito
+        const currentPath = window.location.pathname;
+        const isAuthPage = currentPath === '/login' || 
+                          currentPath === '/register' || 
+                          currentPath === '/forgot-password' || 
+                          currentPath === '/verify' ||
+                          currentPath === '/password/reset';
+        
+        // Só redirecionar se não estiver em página de auth e não estiver já redirecionando
+        if (!isAuthPage && !isRedirecting) {
+          isRedirecting = true;
+          
+          // Usar replace para evitar loop de histórico
+          window.location.replace('/login');
+          
+          // Reset flag após um tempo
+          setTimeout(() => {
+            isRedirecting = false;
+          }, 1000);
         }
       }
     }

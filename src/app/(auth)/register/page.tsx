@@ -34,8 +34,7 @@ export default function RegisterPage() {
       const password = form.getValues('password');
 
       toast.success("Conta criada com sucesso!", {
-        description: data?.message || "Enviamos um email de verificação para você.",
-        className: "bg-green-600 text-white border-none"
+        description: data?.message || "Enviamos um email de verificação para você."
       });
 
       // Passa email e senha para permitir auto-login após verificação
@@ -43,7 +42,34 @@ export default function RegisterPage() {
     },
     onError: (error: any) => {
       console.error(error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || "Erro ao criar conta.";
+      const errorData = error.response?.data;
+      
+      // Tratar erros de validação com múltiplos campos
+      if (errorData?.issues && Array.isArray(errorData.issues)) {
+        const errorMessages = errorData.issues.map((issue: any) => {
+          const field = issue.field ? `${issue.field}: ` : '';
+          return `${field}${issue.message}`;
+        }).join('\n');
+        
+        toast.error("Erro de validação", {
+          description: errorMessages,
+          duration: 5000,
+        });
+        
+        // Também setar erros no formulário se possível
+        errorData.issues.forEach((issue: any) => {
+          if (issue.field && form.setError) {
+            form.setError(issue.field as any, {
+              type: 'manual',
+              message: issue.message,
+            });
+          }
+        });
+        return;
+      }
+      
+      // Tratar mensagem de erro simples
+      const errorMessage = errorData?.message || errorData?.error || "Erro ao criar conta.";
       
       toast.error("Falha no cadastro", {
         description: errorMessage,
@@ -56,27 +82,32 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="w-full animate-fade-in">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-white mb-2 drop-shadow-md">Crie sua conta</h1>
-        <p className="text-zinc-400">
-          Comece sua jornada de colecionador hoje mesmo.
-        </p>
-      </div>
+    <div className="w-full space-y-10 sm:space-y-12 animate-fade-in py-4 sm:py-6">
+        {/* Título */}
+        <div className="text-center space-y-5 sm:space-y-6">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-black drop-shadow-lg">
+              Crie sua conta
+            </h1>
+            <p className="text-zinc-400 text-lg sm:text-xl mt-3 sm:mt-4">
+              Comece sua jornada no Colecionaí
+            </p>
+          </div>
+        </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-7">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-zinc-300 ml-1">Nome</FormLabel>
+                <FormLabel className="text-textSecondary">Nome</FormLabel>
                 <FormControl>
                   <Input 
                     placeholder="Seu nome" 
                     {...field} 
-                    className="h-11 bg-black/20 border-white/10 text-white placeholder:text-zinc-600 focus-visible:ring-blue-500/50 focus-visible:border-blue-500/50 rounded-xl transition-all duration-300"
+                    className="h-11"
                   />
                 </FormControl>
                 <FormMessage />
@@ -93,7 +124,7 @@ export default function RegisterPage() {
                   <Input 
                     placeholder="seu@email.com" 
                     {...field} 
-                    className="h-11 bg-black/20 border-white/10 text-white placeholder:text-zinc-600 focus-visible:ring-blue-500/50 focus-visible:border-blue-500/50 rounded-xl transition-all duration-300" 
+                    className="h-11 bg-black/20 border-white/10 placeholder:text-zinc-600 focus-visible:ring-blue-500/50 focus-visible:border-blue-500/50 rounded-xl transition-all duration-300" 
                   />
                 </FormControl>
                 <FormMessage />
@@ -111,7 +142,7 @@ export default function RegisterPage() {
                     type="password" 
                     placeholder="••••••" 
                     {...field} 
-                    className="h-11 bg-black/20 border-white/10 text-white placeholder:text-zinc-600 focus-visible:ring-blue-500/50 focus-visible:border-blue-500/50 rounded-xl transition-all duration-300" 
+                    className="h-11 bg-black/20 border-white/10 placeholder:text-zinc-600 focus-visible:ring-blue-500/50 focus-visible:border-blue-500/50 rounded-xl transition-all duration-300" 
                   />
                 </FormControl>
                 <FormMessage />
@@ -129,7 +160,7 @@ export default function RegisterPage() {
                     type="password" 
                     placeholder="••••••" 
                     {...field} 
-                    className="h-11 bg-black/20 border-white/10 text-white placeholder:text-zinc-600 focus-visible:ring-blue-500/50 focus-visible:border-blue-500/50 rounded-xl transition-all duration-300" 
+                    className="h-11 bg-black/20 border-white/10 placeholder:text-zinc-600 focus-visible:ring-blue-500/50 focus-visible:border-blue-500/50 rounded-xl transition-all duration-300" 
                   />
                 </FormControl>
                 <FormMessage />
@@ -138,7 +169,8 @@ export default function RegisterPage() {
           />
           <Button 
             type="submit" 
-            className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 border-none transition-all duration-300 hover:scale-[1.02]" 
+            variant="primary"
+            className="w-full h-11 text-base font-medium" 
             loading={isPending}
             disabled={isPending}
           >
@@ -147,10 +179,10 @@ export default function RegisterPage() {
         </form>
       </Form>
 
-      <div className="mt-8 text-center bg-white/5 p-4 rounded-xl border border-white/5">
-        <p className="text-sm text-zinc-400">
+      <div className="mt-8 text-center bg-backgroundSecondary p-4 rounded-lg border border-border">
+        <p className="text-sm text-textSecondary">
           Já tem uma conta?{' '}
-          <Link href="/login" className="text-blue-400 hover:text-blue-300 font-semibold hover:underline transition-colors">
+          <Link href="/login" className="text-primary hover:text-primary-hover font-medium hover:underline transition-colors">
             Fazer login
           </Link>
         </p>

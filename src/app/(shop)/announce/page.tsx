@@ -17,9 +17,12 @@ import { useMutation } from '@tanstack/react-query';
 import { createProduct } from '@/services/productService';
 import { ProductCategory, ProductCondition } from '@/types';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { ConstructionNotice } from '@/components/ui/construction-notice';
+import { Info } from 'lucide-react';
 
 const productSchema = z.object({
   name: z.string().min(5, 'Nome deve ter pelo menos 5 caracteres'),
@@ -35,6 +38,7 @@ export type ProductData = z.infer<typeof productSchema>;
 export default function AnnouncePage() {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
+  const { enabled: analysisModeEnabled } = useAnalysisMode();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -71,6 +75,13 @@ export default function AnnouncePage() {
   });
 
   async function onSubmit(data: ProductData) {
+    if (analysisModeEnabled) {
+      toast.error("Não é possível criar produtos durante o modo análise.", {
+        description: "Complete o tour técnico primeiro.",
+      });
+      return;
+    }
+
     if (!isAuthenticated) {
       toast.error("Você precisa estar logado para anunciar.");
       router.push('/login');
@@ -114,6 +125,24 @@ export default function AnnouncePage() {
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background fixed" />
 
       <div className="container relative z-10 py-12 max-w-7xl mx-auto">
+        {analysisModeEnabled && (
+          <Card className="mb-6 border-yellow-500/50 bg-yellow-500/10">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <Info className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <div className="space-y-1">
+                  <h3 className="text-sm font-semibold text-yellow-700 dark:text-yellow-400">
+                    Modo Análise Ativo
+                  </h3>
+                  <p className="text-sm text-yellow-600 dark:text-yellow-500">
+                    Durante o modo análise, você não pode criar ou modificar produtos. Complete o tour técnico primeiro.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid lg:grid-cols-2 gap-12 items-start">
           
           {/* Left Column: Form */}
@@ -265,8 +294,9 @@ export default function AnnouncePage() {
                       type="submit" 
                       className="w-full h-12 text-lg font-bold bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25" 
                       loading={isPending}
+                      disabled={analysisModeEnabled}
                     >
-                      Publicar Anúncio
+                      {analysisModeEnabled ? 'Indisponível no Modo Análise' : 'Publicar Anúncio'}
                     </Button>
                   </form>
                 </Form>

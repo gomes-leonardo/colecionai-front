@@ -3,8 +3,9 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Timer, Gavel, TrendingUp, Users } from 'lucide-react';
+import { Timer, Gavel, TrendingUp, Users, Construction } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { ConstructionNotice } from '@/components/ui/construction-notice';
 
 // Mock Data for Auctions
 const auctions = [
@@ -76,17 +77,40 @@ function CountdownTimer({ initialSeconds }: { initialSeconds: number }) {
 }
 
 export default function AuctionsPage() {
+  const [showConstructionNotice, setShowConstructionNotice] = useState(false);
+
   return (
-    <div className="container mx-auto px-4 py-12 animate-in fade-in duration-500">
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl font-bold text-foreground mb-4 flex items-center justify-center gap-3">
-          <Gavel className="w-10 h-10 text-primary" />
-          Leilões em Destaque
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Dê o seu lance em itens raros e exclusivos. A melhor oferta leva para casa.
-        </p>
-      </div>
+    <>
+      <ConstructionNotice
+        open={showConstructionNotice}
+        onOpenChange={setShowConstructionNotice}
+        title="Sistema de Leilões em Construção"
+        description="A funcionalidade de leilões está em desenvolvimento e estará disponível em breve. Em breve você poderá dar lances em tempo real em itens raros e exclusivos!"
+      />
+
+      <div className="container mx-auto px-4 py-12 animate-in fade-in duration-500">
+        {/* Aviso de Construção */}
+        <div className="mb-8 bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 flex items-start gap-3">
+          <div className="p-2 rounded-full bg-amber-500/20 text-amber-500 flex-shrink-0">
+            <Construction className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-textPrimary mb-1">Sistema de Leilões em Construção</h3>
+            <p className="text-sm text-textSecondary">
+              Esta funcionalidade está em desenvolvimento. Os leilões exibidos abaixo são apenas demonstrações.
+            </p>
+          </div>
+        </div>
+
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl font-bold text-foreground mb-4 flex items-center justify-center gap-3">
+            <Gavel className="w-10 h-10 text-primary" />
+            Leilões em Destaque
+          </h1>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Dê o seu lance em itens raros e exclusivos. A melhor oferta leva para casa.
+          </p>
+        </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {auctions.map((auction) => (
@@ -139,7 +163,10 @@ export default function AuctionsPage() {
             </CardContent>
 
             <CardFooter className="p-4 pt-0">
-              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 text-lg shadow-lg shadow-primary/20 group-hover:scale-[1.02] transition-transform">
+              <Button 
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 text-lg shadow-lg shadow-primary/20 group-hover:scale-[1.02] transition-transform"
+                onClick={() => setShowConstructionNotice(true)}
+              >
                 Dar Lance
               </Button>
             </CardFooter>
@@ -147,5 +174,6 @@ export default function AuctionsPage() {
         ))}
       </div>
     </div>
+    </>
   );
 }

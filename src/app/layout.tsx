@@ -1,15 +1,22 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Providers from "@/providers/providers";
 import { Toaster } from "@/components/ui/sonner";
-import { cn } from "@/lib/utils";
+import { QueryProvider } from "@/providers/QueryProvider";
+import { CartProvider } from "@/contexts/CartContext";
+import { AcademicFeaturesWrapper } from "@/components/shared/academic-features-wrapper";
+import { AnalysisModeProvider } from "@/contexts/AnalysisModeContext";
+import { AnalysisModeChoiceModal } from "@/components/analysis/AnalysisModeChoiceModal";
+import { AnalysisHUD } from "@/components/analysis/AnalysisHUD";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Coleciona Aí!",
-  description: "E-commerce de itens colecionáveis raros",
+  title: "Colecionaí - Marketplace de Colecionáveis",
+  description: "Compre e venda itens colecionáveis raros e únicos",
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -18,12 +25,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="dark">
-      <body className={cn(inter.className, "bg-slate-950 text-slate-50 min-h-screen antialiased")} suppressHydrationWarning>
-        <Providers>
-          {children}
-          <Toaster />
-        </Providers>
+    <html lang="pt-BR">
+      <body className={inter.className}>
+        <QueryProvider>
+          <CartProvider>
+            <AnalysisModeProvider>
+              <AcademicFeaturesWrapper>
+                {children}
+              </AcademicFeaturesWrapper>
+              <AnalysisModeChoiceModal />
+              <AnalysisHUD />
+              <Toaster />
+            </AnalysisModeProvider>
+          </CartProvider>
+        </QueryProvider>
       </body>
     </html>
   );

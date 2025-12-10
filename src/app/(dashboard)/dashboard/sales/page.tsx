@@ -192,7 +192,7 @@ export default function SalesPage() {
               <div className="space-y-2">
                 <h3 className="text-lg font-medium text-foreground">Nenhum item anunciado</h3>
                 <p className="text-muted-foreground max-w-sm mx-auto">
-                  Você ainda não colocou nada à venda. Que tal desapegar de algo da sua coleção?
+                  Você ainda não colocou nada à venda. Que tal anunciar um item?
                 </p>
               </div>
               <Link href="/announce">

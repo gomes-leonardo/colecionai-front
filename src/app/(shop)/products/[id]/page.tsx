@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getProductById, getProductImageUrl } from '@/services/productService';
 import { Product } from '@/types';
@@ -14,9 +14,17 @@ import {
   User, 
   ShieldCheck, 
   Share2,
-  Heart
+  Heart,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import Link from 'next/link';
+import { Package } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { ShareModal } from '@/components/ui/share-modal';
+import { ConstructionNotice } from '@/components/ui/construction-notice';
+import { SellerChatModal } from '@/components/ui/seller-chat-modal';
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -24,6 +32,11 @@ export default function ProductDetailsPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showConstructionNotice, setShowConstructionNotice] = useState(false);
+  const [showLikeConstruction, setShowLikeConstruction] = useState(false);
+  const [showProfileConstruction, setShowProfileConstruction] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   useEffect(() => {
     async function fetchProduct() {
@@ -52,11 +65,39 @@ export default function ProductDetailsPage() {
 
   if (error || !product) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold text-muted-foreground mb-4">Produto não encontrado</h2>
-        <Button onClick={() => router.back()} variant="outline">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
-        </Button>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            {/* Ícone visual */}
+            <div className="relative mb-8">
+              <div className="w-32 h-32 md:w-40 md:h-40 bg-backgroundSecondary rounded-full flex items-center justify-center border-4 border-primary/20">
+                <Package className="w-16 h-16 md:w-20 md:h-20 text-primary/40" />
+              </div>
+            </div>
+
+            {/* Mensagem */}
+            <h2 className="text-3xl md:text-4xl font-bold text-textPrimary mb-4">
+              Produto não encontrado
+            </h2>
+            <p className="text-lg md:text-xl text-textSecondary mb-8 max-w-md mx-auto">
+              Este produto não está mais disponível ou nunca existiu.
+            </p>
+
+            {/* Ações */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button onClick={() => router.back()} variant="outline" size="lg" className="h-12 px-8 text-base gap-2">
+                <ArrowLeft className="w-5 h-5" />
+                Voltar
+              </Button>
+              <Link href="/">
+                <Button size="lg" variant="primary" className="h-12 px-8 text-base gap-2">
+                  <Package className="w-5 h-5" />
+                  Ver Produtos
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -66,8 +107,48 @@ export default function ProductDetailsPage() {
   const auctionBids = 0;
   const sellerName = "Vendedor"; // Placeholder as Product type only has user_id
 
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = product?.name || 'Produto';
+
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in">
+    <>
+      <ShareModal
+        open={showShareModal}
+        onOpenChange={setShowShareModal}
+        url={currentUrl}
+        title={shareTitle}
+        description="Compartilhe este produto com seus amigos!"
+      />
+
+      <ConstructionNotice
+        open={showConstructionNotice}
+        onOpenChange={setShowConstructionNotice}
+        title="Leilões em Construção"
+        description="A funcionalidade de leilões está em desenvolvimento e estará disponível em breve."
+      />
+
+      <ConstructionNotice
+        open={showLikeConstruction}
+        onOpenChange={setShowLikeConstruction}
+        title="Favoritos em Construção"
+        description="A funcionalidade de favoritar produtos está em desenvolvimento e estará disponível em breve."
+      />
+
+      <ConstructionNotice
+        open={showProfileConstruction}
+        onOpenChange={setShowProfileConstruction}
+        title="Perfil do Vendedor em Construção"
+        description="A visualização do perfil do vendedor está em desenvolvimento e estará disponível em breve."
+      />
+
+      <SellerChatModal
+        open={showChatModal}
+        onOpenChange={setShowChatModal}
+        sellerName={sellerName}
+        productName={product.name}
+      />
+
+      <div className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in">
       <Button 
         variant="ghost" 
         onClick={() => router.back()} 
@@ -87,18 +168,29 @@ export default function ProductDetailsPage() {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                 ) : (
-                    <div className="w-full h-full bg-muted/30 flex flex-col items-center justify-center text-muted-foreground">
-                         <div className="text-6xl font-bold text-muted-foreground/20">IMG</div>
-                         <p className="mt-4 text-sm font-medium">Sem imagem</p>
-                    </div>
+                    <EmptyState
+                      variant="image"
+                      title="Imagem não disponível"
+                      className="w-full h-full"
+                    />
                 )}
                 
                 {/* Floating Action Buttons */}
                 <div className="absolute top-4 right-4 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Button size="icon" variant="secondary" className="rounded-full shadow-lg bg-white/80 backdrop-blur-sm hover:bg-white text-foreground">
+                    <Button 
+                      size="icon" 
+                      variant="secondary" 
+                      className="rounded-full shadow-lg bg-white/80 backdrop-blur-sm hover:bg-white text-foreground"
+                      onClick={() => setShowShareModal(true)}
+                    >
                         <Share2 className="w-5 h-5" />
                     </Button>
-                    <Button size="icon" variant="secondary" className="rounded-full shadow-lg bg-white/80 backdrop-blur-sm hover:bg-white text-destructive hover:text-destructive">
+                    <Button 
+                      size="icon" 
+                      variant="secondary" 
+                      className="rounded-full shadow-lg bg-white/80 backdrop-blur-sm hover:bg-white text-destructive hover:text-destructive"
+                      onClick={() => setShowLikeConstruction(true)}
+                    >
                         <Heart className="w-5 h-5" />
                     </Button>
                 </div>
@@ -152,12 +244,17 @@ export default function ProductDetailsPage() {
                 </div>
 
                 <div className="space-y-3">
-                    <Button 
-                        size="lg" 
+                    <Button
+                        size="lg"
                         className={cn(
                             "w-full text-lg h-14 font-bold rounded-xl shadow-lg shadow-primary/20",
                             isAuction ? "bg-amber-500 hover:bg-amber-600" : "bg-primary hover:bg-primary/90"
                         )}
+                        onClick={() => {
+                          if (isAuction) {
+                            setShowConstructionNotice(true);
+                          }
+                        }}
                     >
                         {isAuction ? (
                             <><Gavel className="mr-2 h-5 w-5" /> Dar Lance</>
@@ -191,14 +288,31 @@ export default function ProductDetailsPage() {
                             <p className="font-bold text-foreground">@{sellerName}</p>
                         </div>
                     </div>
-                    <Button variant="outline" size="sm" className="rounded-full">
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="rounded-full"
+                        onClick={() => setShowProfileConstruction(true)}
+                      >
                         Ver Perfil
-                    </Button>
+                      </Button>
+                      <Button 
+                        variant="primary" 
+                        size="sm" 
+                        className="rounded-full gap-2"
+                        onClick={() => setShowChatModal(true)}
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        Chat
+                      </Button>
+                    </div>
                 </div>
             </div>
 
         </div>
       </div>
     </div>
+    </>
   );
 }

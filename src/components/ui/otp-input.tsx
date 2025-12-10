@@ -1,40 +1,50 @@
 'use client';
 
-import * as React from 'react';
+import { useRef, useEffect, KeyboardEvent } from 'react';
 import { cn } from '@/lib/utils';
 
 interface OtpInputProps {
-  length?: number;
   value: string;
   onChange: (value: string) => void;
+  length?: number;
   disabled?: boolean;
 }
 
-export function OtpInput({ length = 6, value, onChange, disabled }: OtpInputProps) {
-  const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
+export function OtpInput({ value, onChange, length = 6, disabled = false }: OtpInputProps) {
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleChange = (index: number, char: string) => {
-    const newValue = value.split('');
-    newValue[index] = char;
-    const nextValue = newValue.join('');
-    onChange(nextValue);
+  useEffect(() => {
+    if (inputRefs.current[0]) {
+      inputRefs.current[0].focus();
+    }
+  }, []);
 
-    // Auto-focus next input
-    if (char && index < length - 1) {
+  const handleChange = (index: number, inputValue: string) => {
+    const newValue = inputValue.slice(-1); // Pega apenas o último caractere
+    
+    // Aceitar letras e números (alfanumérico)
+    if (!/^[a-zA-Z0-9]*$/.test(newValue)) return;
+
+    const newOtp = value.split('');
+    newOtp[index] = newValue.toUpperCase(); // Converter para maiúscula
+    onChange(newOtp.join(''));
+
+    // Auto-focus no próximo input
+    if (newValue && index < length - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (index: number, e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace') {
       if (!value[index] && index > 0) {
-        // Empty current slot, go back and delete
+        // Se o campo está vazio e aperta backspace, volta para o anterior
         inputRefs.current[index - 1]?.focus();
       } else {
-         // Just delete current
-         const newValue = value.split('');
-         newValue[index] = '';
-         onChange(newValue.join(''));
+        // Limpa o campo atual
+        const newOtp = value.split('');
+        newOtp[index] = '';
+        onChange(newOtp.join(''));
       }
     } else if (e.key === 'ArrowLeft' && index > 0) {
       inputRefs.current[index - 1]?.focus();
@@ -45,44 +55,56 @@ export function OtpInput({ length = 6, value, onChange, disabled }: OtpInputProp
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').slice(0, length);
-    if (!/^[a-zA-Z0-9]*$/.test(pastedData)) return; 
+    const pastedData = e.clipboardData.getData('text/plain').slice(0, length);
     
-    onChange(pastedData);
+    // Aceitar alfanumérico
+    if (!/^[a-zA-Z0-9]+$/.test(pastedData)) return;
     
-    // Fill and focus last filled
+    onChange(pastedData.toUpperCase());
+    
+    // Focus no próximo campo vazio ou no último
     const nextIndex = Math.min(pastedData.length, length - 1);
     inputRefs.current[nextIndex]?.focus();
   };
 
-  // Allow alphanumeric
-  const isValidChar = (char: string) => /^[a-zA-Z0-9]$/.test(char);
-
   return (
-    <div className="flex gap-3 sm:gap-4 justify-center">
-      {Array.from({ length }).map((_, i) => (
+    <div className="flex gap-4 sm:gap-5 justify-center px-2">
+      {Array.from({ length }).map((_, index) => (
         <input
-          key={i}
-          ref={(el) => { inputRefs.current[i] = el }}
+          key={index}
+          ref={(el) => { inputRefs.current[index] = el; }}
           type="text"
+          inputMode="numeric"
           maxLength={1}
-          value={value[i] || ''}
-          disabled={disabled}
-          onChange={(e) => {
-            const val = e.target.value;
-            if (val === '' || isValidChar(val)) {
-              handleChange(i, val);
-            }
-          }}
-          onKeyDown={(e) => handleKeyDown(i, e)}
+          value={value[index] || ''}
+          onChange={(e) => handleChange(index, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
+          disabled={disabled}
           className={cn(
-            "w-12 h-14 sm:w-16 sm:h-20 text-center text-3xl font-bold bg-black/20 rounded-2xl border-2 shadow-sm outline-none transition-all duration-200",
-            "text-white placeholder:text-zinc-700",
-            "focus:border-amber-400 focus:scale-110 focus:shadow-[0_0_20px_rgba(251,191,36,0.2)]",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            value[i] ? "border-amber-400/50" : "border-white/10"
+            // Base styles - aumentado para mais espaço
+            "w-16 h-20 sm:w-18 sm:h-24 text-center text-3xl sm:text-4xl font-bold",
+            "rounded-2xl transition-all duration-200",
+            
+            // Background and border
+            "bg-backgroundSecondary border-2",
+            value[index] 
+              ? "border-primary bg-primary-subtle" 
+              : "border-border hover:border-primary/50",
+            
+            // Focus state
+            "focus:outline-none focus:ring-4 focus:ring-primary/20 focus:border-primary",
+            
+            // Text color
+            "text-textPrimary placeholder:text-textMuted",
+            
+            // Disabled state
+            disabled && "opacity-50 cursor-not-allowed",
+            
+            // Shadow
+            "shadow-sm hover:shadow-md focus:shadow-lg"
           )}
+          aria-label={`Dígito ${index + 1}`}
         />
       ))}
     </div>

@@ -1,216 +1,422 @@
+/* Import Inter font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Clean white background */
-    --background: 0 0% 100%;
-    /* Soft dark gray for text */
-    --foreground: 0 0% 17%;
-    
-    /* Very light gray for cards */
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 17%;
-    
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 17%;
-    
-    /* Subtle blue-gray primary */
-    --primary: 215 16% 47%;
-    --primary-foreground: 0 0% 100%;
-    
-    /* Light gray secondary */
-    --secondary: 214 32% 91%;
-    --secondary-foreground: 215 16% 47%;
-    
-    /* Very light gray for muted */
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    
-    /* Muted blue accent */
-    --accent: 217 91% 60%;
-    --accent-foreground: 0 0% 100%;
-    
-    /* Soft red for destructive */
-    --destructive: 0 63% 51%;
-    --destructive-foreground: 0 0% 100%;
-    
-    /* Soft green for success */
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-    
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 215 16% 47%;
-    
-    --radius: 0.5rem;
-    
-    --chart-1: 215 16% 47%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 217 91% 60%;
-    --chart-5: 0 63% 51%;
-  }
-
-  .dark {
-    /* Keep dark mode for users who prefer it */
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 223 47% 11%;
-    --muted-foreground: 215 20% 65%;
-    
-    --accent: 217 91% 60%;
-    --accent-foreground: 222 47% 11%;
-    
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 100%;
-    
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 224 71% 4%;
-    
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
+  
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-textPrimary;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-textPrimary font-semibold;
+    line-height: 1.25;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+  
+  p {
+    @apply text-textSecondary;
+    line-height: 1.625;
+  }
+  
+  a {
+    @apply text-textPrimary transition-colors duration-200;
+  }
+  
+  a:hover {
+    @apply text-primary;
+  }
+  
+  /* Form elements */
+  input, textarea, select {
+    @apply text-textPrimary;
+  }
+  
+  input::placeholder, textarea::placeholder {
+    @apply text-textMuted;
   }
 }
 
 @layer utilities {
-  .animate-pulse-slow {
-    animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-  
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-
-  .animate-shimmer {
-    animation: shimmer 3s linear infinite;
-  }
-
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradient 8s ease infinite;
-  }
-
-  .glass-effect {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .glass-effect-dark {
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
-  }
-
-  .border-gradient {
-    border-image: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent))) 1;
-  }
-
-  .shadow-glow {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
-
-  .shadow-glow-lg {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  }
-
-  @keyframes pulse-slow {
-    0%, 100% {
-      opacity: 0.3;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.6;
-      transform: scale(1.1);
-    }
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-20px);
-    }
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200% 0;
-    }
-    100% {
-      background-position: 200% 0;
-    }
-  }
-
-  @keyframes gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-
-  /* Smooth scroll */
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Custom scrollbar */
+  /* Custom scrollbar - minimalist style */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
+    @apply bg-backgroundSecondary;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 5px;
+    @apply bg-border rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
+    @apply bg-borderDark;
   }
+  
+  /* Utility classes */
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .container-narrow {
+    @apply container mx-auto px-4 max-w-4xl;
+  }
+  
+  .container-wide {
+    @apply container mx-auto px-4 max-w-7xl;
+  }
+  
+  /* Subtle animations */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.4s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Focus styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+  
+  /* Card hover effect */
+  .card-hover {
+    @apply transition-all duration-200 hover:shadow-md hover:-translate-y-0.5;
+  }
+  
+  /* Analysis Mode - Element Highlight (Spotlight Effect) */
+.analysis-highlight {
+  position: relative !important;
+  z-index: 9999 !important; /* Muito acima do overlay (z-[46]) */
+  
+  /* Criar novo contexto de empilhamento para isolar do blur */
+  isolation: isolate !important;
+  transform-style: preserve-3d !important;
+  
+  /* Leve zoom para destacar */
+  transform: scale(1.02) translateZ(0) !important;
+  
+  /* Borda suave com glow e bordas arredondadas */
+  outline: 3px solid rgba(59, 130, 246, 0.9) !important;
+  outline-offset: 12px;
+  border-radius: 16px !important;
+  
+  /* Garantir que o próprio elemento também tenha border-radius */
+  overflow: hidden !important;
+  
+  /* Elevação e sombras consistentes - mais visível */
+  box-shadow: 
+    0 0 0 4px rgba(59, 130, 246, 0.4),
+    0 0 0 8px rgba(59, 130, 246, 0.25),
+    0 0 0 16px rgba(59, 130, 246, 0.15),
+    0 25px 80px rgba(0, 0, 0, 0.5),
+    0 0 50px rgba(59, 130, 246, 0.4),
+    inset 0 0 25px rgba(255, 255, 255, 0.08) !important;
+  
+  /* Transição suave para todas as propriedades */
+  transition: 
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    outline 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  
+  /* Garantir background sólido para destacar do blur */
+  background-color: var(--background) !important;
+  background-clip: padding-box !important;
+  
+  /* Garantir que o elemento tenha um contexto de empilhamento próprio */
+  transform: scale(1.02) translateZ(0) !important;
+  backface-visibility: hidden !important;
+  
+  /* CRÍTICO: Remover qualquer filtro que possa causar blur */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  
+  /* Animação sutil de pulsação */
+  animation: highlight-glow 3s ease-in-out infinite;
+  
+  /* Garantir que o elemento seja visível mesmo com blur */
+  will-change: transform, box-shadow;
+  
+  /* Garantir que o elemento não seja afetado pelo blur do overlay */
+  contain: layout style paint !important;
+}
+
+/* Garantir que o elemento destacado e seus filhos não tenham blur */
+.analysis-highlight,
+.analysis-highlight * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important; /* Remover qualquer filtro que possa causar blur */
+}
+
+  /* Garantir que elementos dentro do highlight também tenham z-index alto */
+.analysis-highlight * {
+  position: relative;
+  z-index: 10000 !important;
+}
+
+/* Pseudo-elemento para garantir que o elemento destacado tenha um background sólido */
+.analysis-highlight::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: var(--background);
+  z-index: -1;
+  border-radius: 12px;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Animação sutil de glow para o highlight */
+@keyframes highlight-glow {
+  0%, 100% {
+    outline-color: rgba(59, 130, 246, 0.9);
+    box-shadow: 
+      0 0 0 4px rgba(59, 130, 246, 0.4),
+      0 0 0 8px rgba(59, 130, 246, 0.25),
+      0 0 0 16px rgba(59, 130, 246, 0.15),
+      0 25px 80px rgba(0, 0, 0, 0.5),
+      0 0 50px rgba(59, 130, 246, 0.4),
+      inset 0 0 25px rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    outline-color: rgba(96, 165, 250, 1);
+    box-shadow: 
+      0 0 0 4px rgba(59, 130, 246, 0.5),
+      0 0 0 8px rgba(59, 130, 246, 0.3),
+      0 0 0 16px rgba(59, 130, 246, 0.2),
+      0 30px 90px rgba(0, 0, 0, 0.6),
+      0 0 60px rgba(59, 130, 246, 0.5),
+      inset 0 0 30px rgba(255, 255, 255, 0.1);
+  }
+}
+
+
+/* Analysis Mode - Overlay Escuro Base sempre ativo quando modo análise está habilitado */
+/* O overlay de spotlight com buraco é gerenciado pelo componente AnalysisOverlay */
+/* Este é apenas um fallback caso o componente não esteja renderizado */
+body.analysis-mode-enabled::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 45;
+  pointer-events: none;
+  animation: overlay-fade-in 0.4s ease;
+  opacity: 0; /* O AnalysisOverlay vai controlar a visibilidade */
+}
+
+/* O overlay principal é gerenciado pelo componente AnalysisOverlay que usa SVG mask */
+
+@keyframes overlay-fade-in {
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1; 
+  }
+}
+
+/* Analysis Mode - Spotlight (Container Highlight) */
+.analysis-spotlight {
+  position: relative !important;
+  z-index: 55 !important;
+  border-radius: 12px !important;
+  
+  /* Borda brilhante mais evidente */
+  box-shadow: 
+    0 0 0 6px rgba(59, 130, 246, 0.7),
+    0 0 0 12px rgba(59, 130, 246, 0.4),
+    0 0 0 20px rgba(59, 130, 246, 0.2),
+    0 25px 80px rgba(0, 0, 0, 0.7),
+    0 0 60px rgba(59, 130, 246, 0.4) !important;
+  
+  /* Garantir que o conteúdo fique visível */
+  background-color: var(--background) !important;
+  
+  /* Efeito de brilho adicional */
+  filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.6));
+  
+  /* Animação */
+  animation: spotlight-pulse 2s ease-in-out infinite;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Permitir interação apenas com elementos destacados e HUD */
+body.analysis-mode-enabled * {
+  pointer-events: none !important;
+}
+
+.analysis-highlight,
+.analysis-highlight *,
+.analysis-spotlight,
+.analysis-spotlight *,
+[class*="analysis-hud"],
+[class*="analysis-hud"] *,
+button,
+a,
+input,
+textarea,
+select {
+  pointer-events: auto !important;
+}
+
+/* Análise HUD sempre interativo */
+.analysis-hud-panel,
+.analysis-hud-panel * {
+  pointer-events: auto !important;
+  z-index: 100 !important;
+}
+
+/* HUD NUNCA comprime o conteúdo - funciona como overlay absoluto */
+/* O conteúdo mantém seu tamanho natural, o HUD apenas sobrepõe */
+
+/* Garantir que NENHUM padding-right seja adicionado ao main quando HUD está aberto */
+body.analysis-mode-enabled main {
+  /* NUNCA adicionar padding-right - o HUD é overlay absoluto */
+  padding-right: 0 !important;
+}
+
+/* Desktop: HUD flutuante na lateral, não comprime nada */
+@media (min-width: 768px) {
+  /* NÃO adicionar padding - o HUD é overlay absoluto */
+  /* O conteúdo pode ser scrollado normalmente, o HUD fica fixo na lateral */
+  body.analysis-mode-enabled main {
+    /* Sem padding - conteúdo mantém largura total */
+    /* O HUD fica flutuante sobre o conteúdo, não comprime */
+  }
+}
+
+/* Mobile: HUD funciona como drawer modal que cobre tudo quando aberto */
+@media (max-width: 767px) {
+  /* Quando HUD está expandido no mobile - drawer modal fullscreen */
+  body.analysis-mode-enabled.analysis-hud-mobile.analysis-hud-expanded {
+    overflow: hidden; /* Prevenir scroll do body quando drawer está aberto */
+    position: fixed;
+    width: 100%;
+    height: 100%;
+  }
+  
+  body.analysis-mode-enabled.analysis-hud-mobile.analysis-hud-expanded main {
+    /* Conteúdo fica por trás do drawer, não comprimido */
+    /* Usuário pode minimizar para ver o conteúdo */
+    padding-right: 0 !important; /* Garantir que não há padding */
+    width: 100% !important; /* Garantir largura total */
+  }
+  
+  /* Quando HUD está minimizado no mobile - apenas ícone flutuante */
+  body.analysis-mode-enabled.analysis-hud-mobile.analysis-hud-minimized {
+    overflow: auto; /* Permitir scroll normal quando minimizado */
+    position: relative;
+  }
+  
+  body.analysis-mode-enabled.analysis-hud-mobile.analysis-hud-minimized main {
+    /* Sem padding - conteúdo mantém largura total */
+    /* O ícone minimizado (60px) fica flutuante sobre o conteúdo */
+    padding-right: 0 !important; /* Garantir que não há padding */
+    width: 100% !important; /* Garantir largura total */
+  }
+  
+  /* Garantir que o conteúdo seja acessível quando minimizado */
+  body.analysis-mode-enabled.analysis-hud-mobile.analysis-hud-minimized main * {
+    pointer-events: auto !important;
+  }
+  
+  body.analysis-mode-enabled.analysis-hud-mobile main {
+    overflow-x: hidden;
+  }
+}
+
+@keyframes spotlight-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 6px rgba(59, 130, 246, 0.7),
+      0 0 0 12px rgba(59, 130, 246, 0.4),
+      0 0 0 20px rgba(59, 130, 246, 0.2),
+      0 25px 80px rgba(0, 0, 0, 0.7),
+      0 0 60px rgba(59, 130, 246, 0.4);
+    filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.6));
+  }
+  50% {
+    box-shadow: 
+      0 0 0 6px rgba(96, 165, 250, 0.8),
+      0 0 0 12px rgba(59, 130, 246, 0.5),
+      0 0 0 20px rgba(59, 130, 246, 0.25),
+      0 30px 90px rgba(0, 0, 0, 0.8),
+      0 0 70px rgba(59, 130, 246, 0.5);
+    filter: drop-shadow(0 0 35px rgba(59, 130, 246, 0.8));
+  }
+}
 }
