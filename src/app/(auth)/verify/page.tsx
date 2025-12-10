@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { verifyEmail, resendVerificationToken } from '@/services/authService';
+import { verifyEmail, resendVerificationToken, login } from '@/services/authService';
 import { Button } from '@/components/ui/button';
 import { OtpInput } from '@/components/ui/otp-input';
 import { toast } from 'sonner';
@@ -13,14 +13,15 @@ function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
+  const password = searchParams.get('password'); // Senha passada via URL após registro
   const [token, setToken] = useState('');
   
   // Timer state
   const [timeLeft, setTimeLeft] = useState(60);
   const canResend = timeLeft === 0;
 
-  // Status can be: idle, verifying, success, error
-  const [status, setStatus] = useState<'idle' | 'verifying' | 'success' | 'error'>('idle');
+  // Status can be: idle, verifying, success, error, logging-in
+  const [status, setStatus] = useState<'idle' | 'verifying' | 'success' | 'error' | 'logging-in'>('idle');
 
   // Timer effect
   useEffect(() => {
@@ -48,19 +49,49 @@ function VerifyContent() {
 
   const { mutateAsync: verify, isPending } = useMutation({
     mutationFn: verifyEmail,
-    onSuccess: (data: any) => {
+    onSuccess: async (data: any) => {
       setStatus('success');
       
-      // A API retorna { status: "success", message: "..." }
-      // Não retorna token/user automaticamente, precisa fazer login
-      toast.success("Email verificado com sucesso!", {
-        description: data?.message || "Agora você pode fazer login.",
+      toast.success("Email verificado!", {
+        description: "Fazendo login automaticamente...",
         className: "bg-green-600 text-white border-none"
       });
       
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
+      // Auto-login após verificação bem-sucedida
+      if (email && password) {
+        try {
+          setStatus('logging-in');
+          const loginResponse = await login({ email, password });
+          
+          // Salvar token e dados do usuário
+          localStorage.setItem('colecionai.token', loginResponse.token);
+          if (loginResponse.user) {
+            localStorage.setItem('colecionai.user', JSON.stringify(loginResponse.user));
+          }
+          
+          toast.success("Login realizado!", {
+            description: "Redirecionando...",
+            className: "bg-green-600 text-white border-none"
+          });
+          
+          setTimeout(() => {
+            router.push('/');
+          }, 1000);
+        } catch (error) {
+          console.error('Erro no auto-login:', error);
+          toast.error("Verificação OK, mas erro no login", {
+            description: "Por favor, faça login manualmente."
+          });
+          setTimeout(() => {
+            router.push('/login');
+          }, 2000);
+        }
+      } else {
+        // Se não tiver senha, redireciona para login
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
+      }
     },
     onError: (error: any) => {
       setStatus('error');
@@ -92,15 +123,19 @@ function VerifyContent() {
         </p>
       </div>
 
-      {status === 'success' ? (
+      {(status === 'success' || status === 'logging-in') ? (
         <div className="space-y-6 text-center animate-scale-in">
           <div className="mx-auto w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30 shadow-[0_0_30px_rgba(34,197,94,0.3)]">
             <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-semibold text-white">Sucesso!</h2>
-          <p className="text-zinc-400">Preparando seu acesso...</p>
+          <h2 className="text-2xl font-semibold text-white">
+            {status === 'logging-in' ? 'Fazendo login...' : 'Sucesso!'}
+          </h2>
+          <p className="text-zinc-400">
+            {status === 'logging-in' ? 'Aguarde um momento...' : 'Preparando seu acesso...'}
+          </p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-8">

@@ -29,15 +29,17 @@ export default function RegisterPage() {
     mutationFn: register,
     onSuccess: (data: any) => {
       // A API retorna { status: "success", message: "..." }
-      // Usamos o email do formulário para redirecionar
+      // Usamos o email e senha do formulário para permitir auto-login após verificação
       const email = form.getValues('email');
+      const password = form.getValues('password');
 
       toast.success("Conta criada com sucesso!", {
         description: data?.message || "Enviamos um email de verificação para você.",
         className: "bg-green-600 text-white border-none"
       });
 
-      router.push(`/verify?email=${encodeURIComponent(email)}`);
+      // Passa email e senha para permitir auto-login após verificação
+      router.push(`/verify?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
     },
     onError: (error: any) => {
       console.error(error);
