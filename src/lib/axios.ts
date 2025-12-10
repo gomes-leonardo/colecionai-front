@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Apontar para o backend local rodando na porta 3333
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
+// Usa a URL de produção por padrão, mas permite override via env
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://colecionai-api.onrender.com';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
