@@ -24,9 +24,19 @@ export default function MyAdsPage() {
     }
   }, [isAuthenticated, isAuthLoading, router]);
 
-  const { data: products, isLoading, isError } = useQuery({
+  const { data: products, isLoading, isError, error } = useQuery({
     queryKey: ['my-products'],
-    queryFn: () => getMyProducts(),
+    queryFn: async () => {
+      console.log('🔍 Buscando produtos do usuário...');
+      try {
+        const data = await getMyProducts();
+        console.log('✅ Produtos recebidos:', data);
+        return data;
+      } catch (err) {
+        console.error('❌ Erro ao buscar produtos:', err);
+        throw err;
+      }
+    },
     enabled: isAuthenticated,
   });
 
@@ -95,8 +105,18 @@ export default function MyAdsPage() {
               <Skeleton className="h-16 w-full bg-muted" />
             </div>
           ) : isError ? (
-            <div className="text-center py-12 text-destructive">
-              Erro ao carregar seus anúncios. Tente recarregar a página.
+            <div className="text-center py-12 space-y-2">
+              <p className="text-destructive font-semibold">Erro ao carregar seus anúncios.</p>
+              <p className="text-sm text-muted-foreground">
+                {error instanceof Error ? error.message : 'Tente recarregar a página.'}
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.reload()}
+                className="mt-4"
+              >
+                Recarregar
+              </Button>
             </div>
           ) : products?.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
@@ -144,7 +164,7 @@ export default function MyAdsPage() {
                     {product.name}
                   </div>
                   <div className="col-span-3 text-emerald-500 font-bold">
-                    R$ {product.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    R$ {(product.price / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </div>
                   <div className="col-span-3 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary hover:bg-primary/10">
