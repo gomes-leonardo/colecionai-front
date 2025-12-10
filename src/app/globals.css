@@ -4,101 +4,93 @@
 
 @layer base {
   :root {
-    /* Base Neutra - Off-white quente #F5F4EF */
-    --background: 50 17% 95%;
-    /* Cinza Grafite #1C1C1E for text/foreground in light mode for contrast */
-    --foreground: 240 3% 11%;
+    /* Clean white background */
+    --background: 0 0% 100%;
+    /* Soft dark gray for text */
+    --foreground: 0 0% 17%;
     
-    /* White for cards on the off-white background to create subtle depth */
-    --card: 0 0% 100%;
-    --card-foreground: 240 3% 11%;
+    /* Very light gray for cards */
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 17%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 240 3% 11%;
+    --popover-foreground: 0 0% 17%;
     
-    /* Azul Elétrico Suave #4A7BFF */
-    --primary: 224 100% 65%;
+    /* Subtle blue-gray primary */
+    --primary: 215 16% 47%;
     --primary-foreground: 0 0% 100%;
     
-    /* Roxo Neon Controlado #A26BFF */
-    --secondary: 262 100% 71%;
-    --secondary-foreground: 0 0% 100%;
+    /* Light gray secondary */
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 215 16% 47%;
     
-    /* Off-white slightly darker for muted */
-    --muted: 50 10% 90%;
-    --muted-foreground: 240 2% 40%;
+    /* Very light gray for muted */
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
     
-    /* Amarelo Âmbar #FFC857 */
-    --accent: 40 100% 67%;
-    --accent-foreground: 240 3% 11%;
+    /* Muted blue accent */
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
     
-    /* Vermelho Esporte #E04545 */
-    --destructive: 0 72% 58%;
+    /* Soft red for destructive */
+    --destructive: 0 63% 51%;
     --destructive-foreground: 0 0% 100%;
     
-    /* Verde Esmeralda #39B36E (Success) */
-    --success: 146 52% 46%;
+    /* Soft green for success */
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     
-    --border: 240 2% 85%;
-    --input: 240 2% 85%;
-    --ring: 224 100% 65%; /* Primary Blue Ring */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 215 16% 47%;
     
-    --radius: 0.75rem;
+    --radius: 0.5rem;
     
-    --chart-1: 224 100% 65%; /* Blue */
-    --chart-2: 146 52% 46%; /* Green */
-    --chart-3: 40 100% 67%; /* Amber */
-    --chart-4: 262 100% 71%; /* Purple */
-    --chart-5: 0 72% 58%; /* Red */
+    --chart-1: 215 16% 47%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 217 91% 60%;
+    --chart-5: 0 63% 51%;
   }
 
   .dark {
-    /* Base Neutra - Cinza Grafite #1C1C1E */
-    --background: 240 3% 11%;
-    /* Off-white quente #F5F4EF for text */
-    --foreground: 50 17% 95%;
+    /* Keep dark mode for users who prefer it */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
     
-    /* Cinza Médio #3A3A3C */
-    --card: 240 2% 23%;
-    --card-foreground: 50 17% 95%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
     
-    --popover: 240 2% 23%;
-    --popover-foreground: 50 17% 95%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
     
-    /* Azul Elétrico Suave #4A7BFF */
-    --primary: 224 100% 65%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
     
-    /* Roxo Neon Controlado #A26BFF */
-    --secondary: 262 100% 71%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
     
-    /* Darker grey for muted */
-    --muted: 240 2% 18%;
-    --muted-foreground: 240 5% 65%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 20% 65%;
     
-    /* Amarelo Âmbar #FFC857 */
-    --accent: 40 100% 67%;
-    --accent-foreground: 240 3% 11%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 222 47% 11%;
     
-    /* Vermelho Esporte #E04545 */
-    --destructive: 0 72% 58%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
     
-    /* Verde Esmeralda #39B36E */
-    --success: 146 52% 46%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     
-    --border: 240 2% 23%;
-    --input: 240 2% 23%;
-    --ring: 224 100% 65%;
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 224 71% 4%;
     
-    --chart-1: 224 100% 65%;
-    --chart-2: 146 52% 46%;
-    --chart-3: 40 100% 67%;
-    --chart-4: 262 100% 71%;
-    --chart-5: 0 72% 58%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -142,19 +134,19 @@
   }
 
   .text-gradient {
-    @apply bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
   }
 
   .border-gradient {
-    border-image: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary))) 1;
+    border-image: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent))) 1;
   }
 
   .shadow-glow {
-    box-shadow: 0 0 20px rgba(var(--primary-rgb, 74, 123, 255), 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
 
   .shadow-glow-lg {
-    box-shadow: 0 0 40px rgba(var(--primary-rgb, 74, 123, 255), 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   }
 
   @keyframes pulse-slow {

@@ -22,10 +22,12 @@ import {
 import { ProductCategory, ProductCondition } from '@/types';
 import { useDebounce } from 'use-debounce';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Home() {
   const { ref, inView } = useInView();
   const { addItem } = useCart();
+  const { isAuthenticated } = useAuth(false);
   
   // Filters State
   const [nameFilter, setNameFilter] = useState('');
@@ -61,81 +63,85 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative h-[700px] md:h-[800px] flex items-center justify-center overflow-hidden">
-        {/* Animated Background Gradient */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 animate-gradient"></div>
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full object-cover opacity-30"
-          >
-            <source src="https://videos.pexels.com/video-files/3196068/3196068-hd_1920_1080_25fps.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/60 to-background" />
+      {/* Hero Section - Only show when NOT authenticated */}
+      {!isAuthenticated && (
+        <section className="relative h-[700px] md:h-[800px] flex items-center justify-center overflow-hidden">
+          {/* Animated Background Gradient */}
+          <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 animate-gradient"></div>
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover opacity-30"
+            >
+              <source src="https://videos.pexels.com/video-files/3196068/3196068-hd_1920_1080_25fps.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/60 to-background" />
+            
+            {/* Floating orbs */}
+            <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-accent/15 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
+          </div>
           
-          {/* Floating orbs */}
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-pulse-slow"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-accent/15 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent leading-tight drop-shadow-2xl">
-              Desapegue ou <br />
-              <span className="bg-gradient-to-r from-secondary via-primary to-accent bg-clip-text text-transparent">
-                Complete sua Coleção
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-              O marketplace definitivo para colecionadores. De cartas raras a action figures, 
-              encontre o que falta na sua estante ou faça dinheiro com o que está parado.
-            </p>
+          <div className="container mx-auto px-4 relative z-10 text-center">
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent leading-tight drop-shadow-2xl">
+                Desapegue ou <br />
+                <span className="bg-gradient-to-r from-secondary via-primary to-accent bg-clip-text text-transparent">
+                  Complete sua Coleção
+                </span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+                O marketplace definitivo para colecionadores. De cartas raras a action figures, 
+                encontre o que falta na sua estante ou faça dinheiro com o que está parado.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+              <Link href="/login">
+                <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground h-14 px-10 text-lg font-semibold shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
+                  Começar Agora
+                </Button>
+              </Link>
+              <Link href="/announce">
+                <Button size="lg" variant="outline" className="border-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary h-14 px-10 text-lg font-semibold backdrop-blur-sm transition-all duration-300 hover:scale-105">
+                  Anunciar Item
+                </Button>
+              </Link>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
-            <Link href="/login">
-              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 text-primary-foreground h-14 px-10 text-lg font-semibold shadow-xl shadow-primary/30 hover:shadow-2xl hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
-                Começar Agora
-              </Button>
-            </Link>
-            <Link href="/announce">
-              <Button size="lg" variant="outline" className="border-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary h-14 px-10 text-lg font-semibold backdrop-blur-sm transition-all duration-300 hover:scale-105">
-                Anunciar Item
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Featured Categories */}
-      <section className="py-24 bg-gradient-to-b from-background via-card/30 to-background relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-center">
-            <span className="text-gradient">Categorias em Destaque</span>
-          </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Explore nossas principais categorias e encontre exatamente o que procura
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {['Trading Cards', 'Action Figures', 'Comics & Mangás', 'Games Retrô'].map((category, i) => (
-              <Card key={i} className="group hover:border-primary/50 transition-all duration-300 cursor-pointer bg-card/80 backdrop-blur-sm border-border hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-2 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-secondary/0 group-hover:from-primary/5 group-hover:via-accent/5 group-hover:to-secondary/5 transition-all duration-500"></div>
-                <CardContent className="p-6 flex flex-col items-center justify-center gap-4 relative z-10">
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 text-primary group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg group-hover:shadow-primary/20">
-                    <Package className="w-8 h-8" />
-                  </div>
-                  <span className="font-semibold text-foreground group-hover:text-primary transition-colors duration-300">{category}</span>
-                </CardContent>
-              </Card>
-            ))}
+      {/* Featured Categories - Only show when NOT authenticated */}
+      {!isAuthenticated && (
+        <section className="py-24 bg-gradient-to-b from-background via-card/30 to-background relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-[0.02]"></div>
+          <div className="container mx-auto px-4 relative z-10">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-center">
+              <span className="text-gradient">Categorias em Destaque</span>
+            </h2>
+            <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+              Explore nossas principais categorias e encontre exatamente o que procura
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {['Trading Cards', 'Action Figures', 'Comics & Mangás', 'Games Retrô'].map((category, i) => (
+                <Card key={i} className="group hover:border-primary/50 transition-all duration-300 cursor-pointer bg-card/80 backdrop-blur-sm border-border hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-2 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-secondary/0 group-hover:from-primary/5 group-hover:via-accent/5 group-hover:to-secondary/5 transition-all duration-500"></div>
+                  <CardContent className="p-6 flex flex-col items-center justify-center gap-4 relative z-10">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 text-primary group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg group-hover:shadow-primary/20">
+                      <Package className="w-8 h-8" />
+                    </div>
+                    <span className="font-semibold text-foreground group-hover:text-primary transition-colors duration-300">{category}</span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Product Filters & Recent Arrivals */}
       <section className="py-20">
