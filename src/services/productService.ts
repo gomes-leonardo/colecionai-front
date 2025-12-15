@@ -70,18 +70,54 @@ export async function uploadProductImage(id: string, file: File) {
 }
 
 export async function createProduct(data: CreateProductData) {
-  // 1. Create product with all fields except image
-  const { image, ...productData } = data;
-  
-  const response = await api.post<Product>("/products", productData);
-  const product = response.data;
+  try {
+    // 1. Create product with all fields except image
+    const { image, ...productData } = data;
+    
+    const response = await api.post<Product>("/products", productData);
+    const product = response.data;
 
-  // 2. Upload image if present
-  if (image) {
-    return uploadProductImage(product.id, image);
+    // 2. Upload image if present
+    if (image) {
+      return uploadProductImage(product.id, image);
+    }
+
+    return product;
+  } catch (error: any) {
+    // Handle specific error codes
+    if (error.response) {
+      const status = error.response.status;
+      const responseData = error.response.data;
+
+      if (status === 400) {
+        // Validation error - check for Zod issues
+        if (responseData.issues) {
+          throw new Error(responseData.issues.map((issue: any) => issue.message).join(", "));
+        }
+        throw new Error(responseData.message || "Erro de validação. Verifique os dados do produto.");
+      }
+
+      if (status === 401) {
+        throw new Error("Sua sessão expirou. Faça login novamente para criar produtos.");
+      }
+
+      if (status === 403) {
+        throw new Error("Você não tem permissão para criar produtos.");
+      }
+
+      if (status === 409) {
+        throw new Error("Já existe um produto com esse nome.");
+      }
+
+      // Generic error with message from backend
+      if (responseData.message) {
+        throw new Error(responseData.message);
+      }
+    }
+
+    // Network or unknown error
+    throw new Error("Erro ao criar produto. Verifique sua conexão e tente novamente.");
   }
-
-  return product;
 }
 
 export async function updateProduct(id: string, data: Partial<CreateProductData>) {

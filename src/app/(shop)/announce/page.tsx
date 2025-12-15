@@ -68,8 +68,9 @@ export default function AnnouncePage() {
     },
     onError: (error: any) => {
       console.error(error);
+      const errorMessage = error?.message || "Tente novamente mais tarde.";
       toast.error("Erro ao criar anúncio", {
-        description: "Tente novamente mais tarde.",
+        description: errorMessage,
       });
     },
   });
