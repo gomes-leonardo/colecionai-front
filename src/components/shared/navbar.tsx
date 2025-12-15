@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, Plus, LogOut, Microscope, Gavel, Info } from 'lucide-react';
+import { Search, Menu, Plus, LogOut, Microscope, Gavel, Info, MessageSquare, Bell } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { CartSheet } from '@/components/shared/cart-sheet';
 import {
@@ -18,7 +18,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from '@/services/authService';
 import { useAuth } from '@/hooks/useAuth';
 import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { AuctionsInfoModal } from '@/components/ui/auctions-info-modal';
+import { MessagesPopup } from '@/components/shared/messages-popup';
+import { NotificationsPopup } from '@/components/shared/notifications-popup';
 
 interface NavbarProps {
   onStartTour?: () => void;
@@ -43,11 +46,18 @@ function getInitials(name: string | undefined | null): string {
 export function Navbar({ onStartTour }: NavbarProps = {}) {
   const { user, isAuthenticated } = useAuth(false);
   const { enabled, enable, disable } = useAnalysisMode();
+  const { unreadCount, clearAllNotifications } = useNotifications();
   const [showAuctionsInfo, setShowAuctionsInfo] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [messagesMinimized, setMessagesMinimized] = useState(false);
+  const [notificationsMinimized, setNotificationsMinimized] = useState(false);
 
   const handleLogout = async () => {
     try {
       await logout();
+      // Limpa notificações do contexto
+      clearAllNotifications();
     } catch (error) {
       console.error("Erro ao fazer logout:", error);
     } finally {
@@ -73,24 +83,28 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
             <img 
               src="/logo.png" 
               alt="Colecionaí Logo" 
-              className="h-10 w-10 object-contain"
+              className="h-14 w-14 object-contain"
             />
           </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-3">
-          <Link 
-            href="/auctions"
-            className="text-sm font-medium text-textSecondary hover:text-primary transition-colors duration-200 flex items-center gap-2"
-          >
-            <Gavel className="w-4 h-4" />
-            Leilões
+        {/* Desktop Nav - Melhorado */}
+        <div className="hidden md:flex items-center gap-4">
+          {/* Botão de Leilões Destacado */}
+          <Link href="/auctions">
+            <Button 
+              variant="outline" 
+              className="gap-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 transition-all"
+            >
+              <Gavel className="w-4 h-4" />
+              <span className="font-semibold">Leilões</span>
+            </Button>
           </Link>
+          
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setShowAuctionsInfo(true)}
-            className="h-8 w-8 text-textMuted hover:text-primary hover:bg-primary/5 transition-all duration-200"
+            className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200"
             title="Como funcionam os leilões"
           >
             <Info className="w-4 h-4" />
@@ -122,6 +136,56 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
               {enabled ? 'Sair do Modo Análise' : 'Modo Análise'}
             </span>
           </Button>
+
+          {/* Mensagens e Notificações - Apenas para usuários autenticados */}
+          {isAuthenticated && (
+            <>
+              {/* Botão de Mensagens */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                title="Mensagens"
+                onClick={() => {
+                  setShowMessages(!showMessages);
+                  setMessagesMinimized(false);
+                  setShowNotifications(false);
+                }}
+              >
+                <MessageSquare className="w-5 h-5" />
+              </Button>
+
+              {/* Botão de Notificações */}
+              <div className="relative" style={{ zIndex: 9999 }}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative"
+                  title="Notificações"
+                  onClick={() => {
+                    setShowNotifications(!showNotifications);
+                    setNotificationsMinimized(false);
+                    setShowMessages(false);
+                  }}
+                >
+                  <Bell className="w-5 h-5" />
+                  {/* Badge de notificações não lidas */}
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-semibold">
+                      {unreadCount}
+                    </span>
+                  )}
+                </Button>
+                
+                {/* Popup de Notificações */}
+                <NotificationsPopup
+                  isOpen={showNotifications && !notificationsMinimized}
+                  onClose={() => setShowNotifications(false)}
+                  position="header"
+                />
+              </div>
+            </>
+          )}
 
           <CartSheet />
 
@@ -240,6 +304,13 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
         </div>
       </div>
     </nav>
+
+    {/* Popup de Mensagens */}
+    <MessagesPopup
+      isOpen={showMessages && !messagesMinimized}
+      onClose={() => setShowMessages(false)}
+      onMinimize={() => setMessagesMinimized(true)}
+    />
     </>
   );
 }

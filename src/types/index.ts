@@ -57,3 +57,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
 }
+
+// Export auction types
+export * from './auction';

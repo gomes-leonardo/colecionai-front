@@ -1,10 +1,10 @@
-import { Package, Search } from 'lucide-react';
+import { Package, Search, AlertCircle, Gavel } from 'lucide-react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 interface EmptyStateProps {
-  icon?: 'package' | 'search';
+  icon?: 'package' | 'search' | 'alert' | 'gavel';
   title?: string;
   description?: string;
   action?: {
@@ -12,7 +12,7 @@ interface EmptyStateProps {
     onClick: () => void;
   };
   className?: string;
-  variant?: 'products' | 'image' | 'default';
+  variant?: 'products' | 'image' | 'default' | 'error' | 'auctions';
 }
 
 export function EmptyState({
@@ -23,7 +23,13 @@ export function EmptyState({
   className,
   variant = 'default',
 }: EmptyStateProps) {
-  const Icon = icon === 'package' ? Package : Search;
+  const iconMap = {
+    package: Package,
+    search: Search,
+    alert: AlertCircle,
+    gavel: Gavel,
+  };
+  const Icon = iconMap[icon];
 
   // Variante para produtos não encontrados
   if (variant === 'products') {
@@ -33,6 +39,64 @@ export function EmptyState({
         <div className="relative mb-8">
           <div className="w-32 h-32 md:w-40 md:h-40 bg-backgroundSecondary rounded-full flex items-center justify-center border-4 border-primary/20">
             <Package className="w-16 h-16 md:w-20 md:h-20 text-primary/40" />
+          </div>
+        </div>
+
+        {/* Mensagem */}
+        <h3 className="text-2xl md:text-3xl font-bold text-textPrimary mb-4">
+          {title}
+        </h3>
+        <p className="text-lg text-textSecondary mb-8 max-w-md mx-auto">
+          {description}
+        </p>
+
+        {/* Ações */}
+        {action && (
+          <Button onClick={action.onClick} variant="outline" size="lg" className="h-12 px-8 text-base">
+            {action.label}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // Variante para leilões não encontrados
+  if (variant === 'auctions') {
+    return (
+      <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
+        {/* Ícone visual */}
+        <div className="relative mb-8">
+          <div className="w-32 h-32 md:w-40 md:h-40 bg-backgroundSecondary rounded-full flex items-center justify-center border-4 border-primary/20">
+            <Gavel className="w-16 h-16 md:w-20 md:h-20 text-primary/40" />
+          </div>
+        </div>
+
+        {/* Mensagem */}
+        <h3 className="text-2xl md:text-3xl font-bold text-textPrimary mb-4">
+          {title}
+        </h3>
+        <p className="text-lg text-textSecondary mb-8 max-w-md mx-auto">
+          {description}
+        </p>
+
+        {/* Ações */}
+        {action && (
+          <Button onClick={action.onClick} variant="outline" size="lg" className="h-12 px-8 text-base">
+            {action.label}
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // Variante para erros
+  if (variant === 'error') {
+    return (
+      <div className={cn('flex flex-col items-center justify-center py-16 px-4 text-center', className)}>
+        {/* Ícone visual */}
+        <div className="relative mb-8">
+          <div className="w-32 h-32 md:w-40 md:h-40 bg-destructive/10 rounded-full flex items-center justify-center border-4 border-destructive/20">
+            <AlertCircle className="w-16 h-16 md:w-20 md:h-20 text-destructive/60" />
           </div>
         </div>
 

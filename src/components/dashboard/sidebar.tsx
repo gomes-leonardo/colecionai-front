@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { logout } from '@/services/authService';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 // Função para gerar iniciais do nome
 function getInitials(name: string | undefined | null): string {
@@ -35,6 +36,7 @@ function getInitials(name: string | undefined | null): string {
 const menuItems = [
   { icon: LayoutDashboard, label: 'Visão Geral', href: '/dashboard' },
   { icon: ShoppingBag, label: 'Minhas Vendas', href: '/dashboard/sales' },
+  { icon: Package, label: 'Meus Leilões', href: '/dashboard/collections' },
   { icon: Gavel, label: 'Meus Lances', href: '/dashboard/bids' },
   { icon: Settings, label: 'Configurações', href: '/dashboard/settings' },
 ];
@@ -42,6 +44,7 @@ const menuItems = [
 export function SidebarContent() {
   const pathname = usePathname();
   const { user } = useAuth(false);
+  const { clearAllNotifications } = useNotifications();
   const userInitials = getInitials(user?.name);
   const userName = user?.name || 'Usuário';
 
@@ -75,6 +78,17 @@ export function SidebarContent() {
           >
             <ShoppingBag className="w-5 h-5" />
             Minhas Vendas
+          </Link>
+          <Link 
+            href="/dashboard/collections" 
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+              pathname === '/dashboard/collections' 
+                ? 'bg-primary/10 text-primary shadow-sm shadow-primary/10' 
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+          >
+            <Package className="w-5 h-5" />
+            Meus Leilões
           </Link>
           <Link 
             href="/dashboard/bids" 
@@ -120,6 +134,8 @@ export function SidebarContent() {
           onClick={async () => {
             try {
               await logout();
+              // Limpa notificações do contexto
+              clearAllNotifications();
             } catch (error) {
               console.error("Erro ao fazer logout:", error);
             } finally {

@@ -18,7 +18,27 @@ export async function logout() {
   } finally {
     // Limpa dados do usuário do localStorage
     if (typeof window !== 'undefined') {
+      const userData = localStorage.getItem('colecionai.user');
+      let userId: string | null = null;
+      
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          userId = user.id;
+        } catch (e) {
+          // Ignora erro de parsing
+        }
+      }
+      
       localStorage.removeItem('colecionai.user');
+      
+      // Limpa notificações do usuário
+      if (userId) {
+        localStorage.removeItem(`colecionai.notifications.${userId}`);
+      }
+      // Limpa também a chave antiga sem user_id (para migração)
+      localStorage.removeItem('colecionai.notifications');
+      
       // Cookie será limpo pelo backend
     }
   }

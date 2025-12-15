@@ -4,10 +4,12 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { CartProvider } from "@/contexts/CartContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { AcademicFeaturesWrapper } from "@/components/shared/academic-features-wrapper";
 import { AnalysisModeProvider } from "@/contexts/AnalysisModeContext";
 import { AnalysisModeChoiceModal } from "@/components/analysis/AnalysisModeChoiceModal";
 import { AnalysisHUD } from "@/components/analysis/AnalysisHUD";
+import { NotificationListener } from "@/components/shared/notification-listener";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,16 +30,19 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={inter.className}>
         <QueryProvider>
-          <CartProvider>
-            <AnalysisModeProvider>
-              <AcademicFeaturesWrapper>
-                {children}
-              </AcademicFeaturesWrapper>
-              <AnalysisModeChoiceModal />
-              <AnalysisHUD />
-              <Toaster />
-            </AnalysisModeProvider>
-          </CartProvider>
+          <NotificationProvider>
+            <CartProvider>
+              <AnalysisModeProvider>
+                <AcademicFeaturesWrapper>
+                  {children}
+                </AcademicFeaturesWrapper>
+                <AnalysisModeChoiceModal />
+                <AnalysisHUD />
+                <NotificationListener />
+                <Toaster />
+              </AnalysisModeProvider>
+            </CartProvider>
+          </NotificationProvider>
         </QueryProvider>
       </body>
     </html>
