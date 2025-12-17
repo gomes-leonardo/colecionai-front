@@ -11,3 +11,14 @@ export async function getMe(): Promise<User> {
   const response = await api.get<MeResponse>('/me');
   return response.data.user;
 }
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export async function getUserProfile(id: string): Promise<UserProfile> {
+  const response = await api.get<UserProfile>(`/profile/${id}`);
+  return response.data;
+}

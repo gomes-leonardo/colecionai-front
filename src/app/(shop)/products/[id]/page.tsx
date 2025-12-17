@@ -25,6 +25,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ShareModal } from '@/components/ui/share-modal';
 import { ConstructionNotice } from '@/components/ui/construction-notice';
 import { SellerChatModal } from '@/components/ui/seller-chat-modal';
+import { UserProfileModal } from '@/components/shared/user-profile-modal';
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -35,7 +36,7 @@ export default function ProductDetailsPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showConstructionNotice, setShowConstructionNotice] = useState(false);
   const [showLikeConstruction, setShowLikeConstruction] = useState(false);
-  const [showProfileConstruction, setShowProfileConstruction] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [showChatModal, setShowChatModal] = useState(false);
 
   useEffect(() => {
@@ -134,11 +135,10 @@ export default function ProductDetailsPage() {
         description="A funcionalidade de favoritar produtos está em desenvolvimento e estará disponível em breve."
       />
 
-      <ConstructionNotice
-        open={showProfileConstruction}
-        onOpenChange={setShowProfileConstruction}
-        title="Perfil do Vendedor em Construção"
-        description="A visualização do perfil do vendedor está em desenvolvimento e estará disponível em breve."
+      <UserProfileModal
+        userId={product?.user_id || ''}
+        open={showProfileModal}
+        onOpenChange={setShowProfileModal}
       />
 
       <SellerChatModal
@@ -293,7 +293,7 @@ export default function ProductDetailsPage() {
                         variant="outline" 
                         size="sm" 
                         className="rounded-full"
-                        onClick={() => setShowProfileConstruction(true)}
+                        onClick={() => setShowProfileModal(true)}
                       >
                         Ver Perfil
                       </Button>

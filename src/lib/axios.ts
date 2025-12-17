@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logout } from '@/services/authService';
 
 // Em desenvolvimento usa localhost HTTP, em produção usa HTTPS
 const API_BASE_URL = process.env.NODE_ENV === 'development'
@@ -21,6 +22,8 @@ api.interceptors.request.use((config) => {
 
 // Flag global para prevenir múltiplos redirecionamentos simultâneos
 let isRedirecting = false;
+// Flag para prevenir múltiplas chamadas de logout simultâneas
+let isLoggingOut = false;
 
 // INTERCEPTOR DE RESPOSTA (Volta do Back -> Chega no Front)
 api.interceptors.response.use(
@@ -33,14 +36,22 @@ api.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
+  async (error) => {
     // Se o erro for 401 (Token inválido/expirado)
     if (error.response?.status === 401) {
-      // Limpar cache de dados do usuário do localStorage
-      // Nota: O token de autenticação está em httpOnly cookies, não no localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('colecionai.user');
-        // Cookie httpOnly será limpo automaticamente pelo backend
+      // Chamar logout apenas uma vez para evitar loops
+      if (!isLoggingOut && typeof window !== 'undefined') {
+        isLoggingOut = true;
+        
+        try {
+          // Chamar endpoint de logout para limpar sessão no backend
+          await logout();
+        } catch (logoutError) {
+          // Se logout falhar, pelo menos limpar localStorage
+          localStorage.removeItem('colecionai.user');
+        } finally {
+          isLoggingOut = false;
+        }
         
         // Evitar redirecionamento infinito
         const currentPath = window.location.pathname;

@@ -64,14 +64,24 @@ export function useAuth(requireAuth: boolean = true) {
     if (needsRedirect) {
       redirectAttemptedRef.current = true;
       
-      // Limpa dados do usuário do localStorage (se houver)
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('colecionai.user');
-        // Cookie será limpo pelo backend no logout
-      }
+      // Chamar logout para limpar sessão no backend
+      // Importação dinâmica para evitar problemas de circular dependency
+      const performLogout = async () => {
+        try {
+          const { logout } = await import('@/services/authService');
+          await logout();
+        } catch (logoutError) {
+          // Se logout falhar, pelo menos limpar localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('colecionai.user');
+          }
+        }
+      };
       
-      // Usar replace para evitar adicionar ao histórico
-      router.replace('/login');
+      performLogout().finally(() => {
+        // Usar replace para evitar adicionar ao histórico
+        router.replace('/login');
+      });
     }
   }, [user, isError, isLoading, router, requireAuth, hasToken, pathname, error]);
 
