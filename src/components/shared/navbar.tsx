@@ -229,6 +229,12 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
                       <Link href="/dashboard/sales" className="cursor-pointer">Minhas Vendas</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
+                      <Link href="/dashboard/collections" className="cursor-pointer">Meus Leilões</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/bids" className="cursor-pointer">Meus Lances</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link href="/dashboard/settings" className="cursor-pointer">Configurações</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />

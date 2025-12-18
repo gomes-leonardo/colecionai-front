@@ -1,7 +1,7 @@
 import { Product } from "./index";
 
 export enum AuctionStatus {
-  ACTIVE = "ACTIVE",
+  OPEN = "OPEN",           // Mudado de ACTIVE para OPEN (backend usa OPEN)
   FINISHED = "FINISHED",
   CANCELLED = "CANCELLED"
 }

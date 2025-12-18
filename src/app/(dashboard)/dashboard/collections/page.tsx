@@ -59,7 +59,7 @@ export default function MyAuctionsPage() {
     }
   };
 
-  const activeAuctions = auctions.filter(a => a.status === 'ACTIVE');
+  const activeAuctions = auctions.filter(a => a.status === 'OPEN');
   const finishedAuctions = auctions.filter(a => a.status === 'FINISHED');
 
   return (
@@ -86,9 +86,9 @@ export default function MyAuctionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total de Leilões</p>
-                <p className="text-2xl font-bold text-foreground">
+                <div className="text-2xl font-bold text-foreground">
                   {loading ? <Skeleton className="h-8 w-16 inline-block" /> : auctions.length}
-                </p>
+                </div>
               </div>
               <Gavel className="w-8 h-8 text-primary opacity-50" />
             </div>
@@ -100,9 +100,9 @@ export default function MyAuctionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Leilões Ativos</p>
-                <p className="text-2xl font-bold text-emerald-500">
+                <div className="text-2xl font-bold text-emerald-500">
                   {loading ? <Skeleton className="h-8 w-16 inline-block" /> : activeAuctions.length}
-                </p>
+                </div>
               </div>
               <Badge className="bg-emerald-500/20 text-emerald-500 border-emerald-500/30">
                 Ativo
@@ -116,9 +116,9 @@ export default function MyAuctionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Finalizados</p>
-                <p className="text-2xl font-bold text-muted-foreground">
+                <div className="text-2xl font-bold text-muted-foreground">
                   {loading ? <Skeleton className="h-8 w-16 inline-block" /> : finishedAuctions.length}
-                </p>
+                </div>
               </div>
               <Badge variant="secondary">Finalizado</Badge>
             </div>

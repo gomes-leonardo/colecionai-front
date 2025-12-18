@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Gavel, Loader2, Plus } from 'lucide-react';
-import { getAuctions, getMyAuctions, deleteAuction } from '@/services/auctionService';
+import { getAuctions, getMyAuctions, deleteAuction, cancelAuction } from '@/services/auctionService';
 import { Auction, AuctionFilters as AuctionFiltersType } from '@/types/auction';
 import { AuctionCard } from '@/components/shop/auction-card';
 import { MyAuctionCard } from '@/components/shop/my-auction-card';
@@ -30,6 +30,7 @@ export default function AuctionsPage() {
   const [activeTab, setActiveTab] = useState('all');
   const [showRulesModal, setShowRulesModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadAuctions();
@@ -46,7 +47,17 @@ export default function AuctionsPage() {
       setLoading(true);
       setError(null);
       const data = await getAuctions(filters);
-      setAuctions(data);
+      
+      // Filtrar leilões do próprio usuário (usar user_id do produto)
+      const filteredAuctions = user?.id 
+        ? data.filter(auction => {
+            // Verificar se o produto tem user_id
+            const productUserId = (auction.product as any)?.user_id;
+            return productUserId !== user.id;
+          })
+        : data;
+      
+      setAuctions(filteredAuctions);
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar leilões');
     } finally {
@@ -82,6 +93,23 @@ export default function AuctionsPage() {
       });
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleCancelAuction = async (auctionId: string) => {
+    try {
+      setCancellingId(auctionId);
+      await cancelAuction(auctionId);
+      toast.success('Leilão cancelado com sucesso!', {
+        description: 'O produto voltou para a lista de produtos disponíveis.'
+      });
+      loadMyAuctions(); // Reload my auctions
+    } catch (err: any) {
+      toast.error('Erro ao cancelar leilão', {
+        description: err.message
+      });
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -223,7 +251,9 @@ export default function AuctionsPage() {
                   key={auction.id} 
                   auction={auction}
                   onDelete={handleDeleteAuction}
+                  onCancel={handleCancelAuction}
                   isDeleting={deletingId === auction.id}
+                  isCancelling={cancellingId === auction.id}
                 />
               ))}
             </div>

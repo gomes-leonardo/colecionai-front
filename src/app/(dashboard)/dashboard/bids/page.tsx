@@ -18,9 +18,23 @@ import { ptBR } from 'date-fns/locale/pt-BR';
 const getStatusBadge = (bid: UserBid, userId?: string) => {
   const auction = bid.auction;
   const isFinished = auction.status === 'FINISHED' || new Date(auction.end_date) < new Date();
+  
+  // Use isSurpassed from backend if available
+  if (bid.isSurpassed !== undefined) {
+    if (isFinished) {
+      return bid.isSurpassed
+        ? <Badge variant="secondary">Perdido</Badge>
+        : <Badge className="bg-primary hover:bg-primary/90">Vencido</Badge>;
+    }
+    
+    return bid.isSurpassed
+      ? <Badge variant="destructive">Superado</Badge>
+      : <Badge className="bg-emerald-500 hover:bg-emerald-600">Ganhando</Badge>;
+  }
+  
+  // Fallback to old logic
   const bids = auction.bids || [];
   const highestBid = bids.length > 0 ? bids[0] : null;
-  // Compara se o maior lance é do usuário atual
   const isMyBidHighest = highestBid && userId && highestBid.user?.id === userId;
   
   if (isFinished) {
@@ -84,9 +98,15 @@ export default function MyBidsPage() {
   };
 
   const getCurrentBid = (bid: UserBid) => {
+    // Use currentPrice from backend if available (comes as number)
+    if (bid.currentPrice !== undefined) {
+      return bid.currentPrice;
+    }
+    
+    // Fallback to calculating from bids array
     const bids = bid.auction.bids || [];
     if (bids.length === 0) {
-      return parseFloat(bid.auction.start_price);
+      return parseFloat(bid.auction.start_price || '0');
     }
     return parseFloat(bids[0].amount);
   };
@@ -94,9 +114,18 @@ export default function MyBidsPage() {
   const getStatus = (bid: UserBid) => {
     const auction = bid.auction;
     const isFinished = auction.status === 'FINISHED' || new Date(auction.end_date) < new Date();
+    
+    // Use isSurpassed from backend if available
+    if (bid.isSurpassed !== undefined) {
+      if (isFinished) {
+        return bid.isSurpassed ? 'lost' : 'won';
+      }
+      return bid.isSurpassed ? 'outbid' : 'winning';
+    }
+    
+    // Fallback to old logic if backend doesn't provide isSurpassed
     const bids = auction.bids || [];
     const highestBid = bids.length > 0 ? bids[0] : null;
-    // Compara se o maior lance é do usuário atual
     const isMyBidHighest = highestBid && user?.id && highestBid.user?.id === user.id;
     
     if (isFinished) {
@@ -213,7 +242,7 @@ export default function MyBidsPage() {
                           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                           onClick={(e) => {
                             e.preventDefault();
-                            window.location.href = `/auctions/${bid.auction.id}`;
+                            window.location.href = `/auctions/${bid.auction_id}`;
                           }}
                         >
                           Aumentar Lance
@@ -226,7 +255,7 @@ export default function MyBidsPage() {
                           className="w-full border-emerald-500 text-emerald-500 hover:bg-emerald-500/10"
                           onClick={(e) => {
                             e.preventDefault();
-                            window.location.href = `/auctions/${bid.auction.id}`;
+                            window.location.href = `/auctions/${bid.auction_id}`;
                           }}
                         >
                           Ver Detalhes

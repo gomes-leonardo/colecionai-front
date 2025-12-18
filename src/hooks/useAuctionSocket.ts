@@ -33,6 +33,9 @@ interface UseAuctionSocketOptions {
 
 /**
  * Custom hook to handle auction-specific WebSocket events
+ * 
+ * IMPORTANTE: Este hook trata apenas eventos PÚBLICOS de leilão (new_bid, auction:ended)
+ * Notificações PRIVADAS (OUTBID, OWNER_NEW_BID) são tratadas pelo NotificationListener
  */
 export function useAuctionSocket({
   auctionId,
@@ -61,22 +64,14 @@ export function useAuctionSocket({
     });
   }, [auctionId, onBidUpdate]);
 
-  // Handle outbid event (when user was outbid)
-  const handleOutbid = useCallback((data: any) => {
-    console.log('⚠️ Você foi superado:', data);
-    
-    // Only show if this is for the current user
-    if (!userId) return;
-
-    // Backend sends: { username, email, productName, newAmount }
-    const formattedAmount = typeof data.newAmount === 'number' 
-      ? data.newAmount.toFixed(2) 
-      : parseFloat(data.newAmount).toFixed(2);
-
-    toast.warning('Você foi superado!', {
-      description: `${data.username} deu um lance maior em "${data.productName}": R$ ${formattedAmount}`,
-    });
-  }, [userId]);
+  // REMOVIDO: handleOutbid
+  // Este evento não existe no backend. O backend emite 'notification' com type: 'OUTBID'
+  // que é tratado pelo NotificationListener para evitar duplicação
+  // 
+  // const handleOutbid = useCallback((data: any) => {
+  //   console.log('⚠️ Você foi superado:', data);
+  //   ...
+  // }, [userId]);
 
   // Handle auction ended event
   const handleAuctionEnded = useCallback((data: AuctionEndedEvent) => {
@@ -110,20 +105,24 @@ export function useAuctionSocket({
     const socket = initializeSocket();
 
     // Subscribe to auction events
-    socket.on('bid:new', handleNewBid);
-    socket.on('bid:outbid', handleOutbid);
+    // IMPORTANTE: Backend emite 'new_bid' (não 'bid:new')
+    socket.on('new_bid', handleNewBid);
+    
+    // REMOVIDO: 'bid:outbid' não existe no backend
+    // O backend emite 'notification' com type: 'OUTBID'
+    // Isso já é tratado pelo NotificationListener
+    
     socket.on('auction:ended', handleAuctionEnded);
 
     // Cleanup on unmount
     return () => {
       const currentSocket = getSocket();
       if (currentSocket) {
-        offSocketEvent('bid:new', handleNewBid);
-        offSocketEvent('bid:outbid', handleOutbid);
+        offSocketEvent('new_bid', handleNewBid);
         offSocketEvent('auction:ended', handleAuctionEnded);
       }
     };
-  }, [handleNewBid, handleOutbid, handleAuctionEnded]);
+  }, [handleNewBid, handleAuctionEnded]);
 
   return {
     // Expose socket instance if needed

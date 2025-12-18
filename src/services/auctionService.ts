@@ -215,3 +215,39 @@ export async function deleteAuction(auctionId: string): Promise<void> {
     throw new Error('Erro ao excluir leilão');
   }
 }
+
+/**
+ * Cancel an auction (changes status to CANCELLED)
+ * Only works if there are no bids
+ */
+export async function cancelAuction(auctionId: string): Promise<Auction> {
+  try {
+    // Use updateAuction to set status to CANCELLED
+    const response = await api.put<Auction>(`/auctions/${auctionId}`, {
+      status: 'CANCELLED'
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      const status = error.response.status;
+      const responseData = error.response.data;
+
+      if (status === 400) {
+        // Validation error - probably has bids
+        throw new Error(responseData.message || 'Não é possível cancelar leilão com lances');
+      }
+
+      if (status === 403) {
+        throw new Error('Você não tem permissão para cancelar este leilão');
+      }
+      
+      if (status === 404) {
+        throw new Error('Leilão não encontrado');
+      }
+
+      throw new Error(responseData.message || 'Erro ao cancelar leilão');
+    }
+    
+    throw new Error('Erro ao cancelar leilão');
+  }
+}

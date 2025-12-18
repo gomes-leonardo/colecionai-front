@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { Clock, Gavel, ArrowLeft, Loader2, Zap, Trophy, Users, AlertCircle } from 'lucide-react';
+import { Clock, Gavel, ArrowLeft, Loader2, Zap, Trophy, Users, AlertCircle, XCircle } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { toast } from 'sonner';
-import { getAuctionDetails } from '@/services/auctionService';
+import { getAuctionDetails, cancelAuction } from '@/services/auctionService';
 import { createBid } from '@/services/bidService';
 import { AuctionDetails } from '@/types/auction';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +27,7 @@ export default function AuctionDetailPage() {
   const [placingBid, setPlacingBid] = useState(false);
   const [bidAmount, setBidAmount] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [cancellingAuction, setCancellingAuction] = useState(false);
 
   // Fetch auction details
   const fetchAuction = useCallback(async () => {
@@ -195,6 +196,25 @@ export default function AuctionDetailPage() {
       });
     } finally {
       setPlacingBid(false);
+    }
+  };
+
+  const handleCancelAuction = async () => {
+    if (!auction) return;
+
+    try {
+      setCancellingAuction(true);
+      await cancelAuction(auction.id);
+      toast.success('Leilão cancelado com sucesso!', {
+        description: 'O produto voltou para a lista de produtos disponíveis.'
+      });
+      router.push('/auctions');
+    } catch (error: any) {
+      toast.error('Erro ao cancelar leilão', {
+        description: error.message || 'Tente novamente'
+      });
+    } finally {
+      setCancellingAuction(false);
     }
   };
 
@@ -426,6 +446,35 @@ export default function AuctionDetailPage() {
                         {formatCurrency(currentBid)}
                       </p>
                     </div>
+                    
+                    {/* Botão Cancelar - só aparece se leilão estiver ativo */}
+                    {auction.status === 'OPEN' && (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="w-full hover:bg-warning/10 hover:text-warning hover:border-warning/30"
+                        onClick={handleCancelAuction}
+                        disabled={cancellingAuction}
+                      >
+                        {cancellingAuction ? (
+                          <>
+                            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                            Cancelando...
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-5 h-5 mr-2" />
+                            Cancelar Leilão
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    
+                    {auction.status === 'OPEN' && (
+                      <p className="text-xs text-center text-muted-foreground">
+                        Só é possível cancelar se não houver lances
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               ) : (
