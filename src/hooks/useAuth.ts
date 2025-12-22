@@ -38,6 +38,15 @@ export function useAuth(requireAuth: boolean = true) {
     // Não fazer nada se não requer autenticação
     if (!requireAuth) return;
     
+    // Verificar se modo análise está ativo - NÃO fazer logout/redirecionamento nesse caso
+    const isAnalysisModeActive = typeof window !== 'undefined' && 
+      document.body.classList.contains('analysis-mode-enabled');
+    
+    if (isAnalysisModeActive) {
+      // No modo análise, não fazer logout nem redirecionar
+      return;
+    }
+    
     // Não redirecionar enquanto está carregando
     if (isLoading) return;
     

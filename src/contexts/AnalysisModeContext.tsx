@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { AnalysisModeContextType, AnalysisModeChoice, AnalysisStep } from '@/types/analysis';
 import { analysisSteps } from '@/lib/analysis-steps';
 import { AnalysisOverlay } from '@/components/analysis/AnalysisOverlay';
-import { logout } from '@/services/authService';
+// Removido import de logout - modo análise não requer autenticação
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,70 +30,18 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
   const [enabled, setEnabled] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [choice, setChoiceState] = useState<AnalysisModeChoice>(null);
-  const [loginFailed, setLoginFailed] = useState(false); // Flag para prevenir loops
-  const [isLoginLoading, setIsLoginLoading] = useState(false); // Estado para indicar se o login está em progresso (para UI)
-  const [showLoginErrorModal, setShowLoginErrorModal] = useState(false); // Estado para controlar modal de erro de login
-  
-  // Refs para garantir que login só é tentado UMA vez, mesmo que effect rode múltiplas vezes
-  const loginAttemptedRef = useRef(false);
-  const loginInProgressRef = useRef(false);
-  const loginTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Tratamento de erro global - sempre deslogar em caso de erro
+  // Tratamento de erro global - apenas logar, não deslogar (modo análise não requer autenticação)
   useEffect(() => {
-    const handleError = async (event: ErrorEvent) => {
-      // Se modo análise está ativo e há erro, deslogar usuário de teste
+    const handleError = (event: ErrorEvent) => {
       if (enabled) {
         console.error('Erro detectado no modo análise:', event.error);
-        try {
-          await logout();
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.user');
-            // Cookie será limpo pelo backend
-          }
-          toast.warning('Sessão encerrada por segurança', {
-            description: 'Um erro foi detectado no modo análise. Você foi deslogado automaticamente por segurança.',
-            duration: 5000,
-          });
-        } catch (e) {
-          // Ignorar erros de logout, mas garantir limpeza
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.user');
-            // Cookie será limpo pelo backend
-          }
-          toast.warning('Sessão encerrada por segurança', {
-            description: 'Um erro foi detectado no modo análise. Você foi deslogado automaticamente por segurança.',
-            duration: 5000,
-          });
-        }
       }
     };
 
-    const handleUnhandledRejection = async (event: PromiseRejectionEvent) => {
-      // Se modo análise está ativo e há promise rejeitada, deslogar usuário de teste
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       if (enabled) {
         console.error('Promise rejeitada no modo análise:', event.reason);
-        try {
-          await logout();
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.user');
-            // Cookie será limpo pelo backend
-          }
-          toast.warning('Sessão encerrada por segurança', {
-            description: 'Um erro foi detectado no modo análise. Você foi deslogado automaticamente por segurança.',
-            duration: 5000,
-          });
-        } catch (e) {
-          // Ignorar erros de logout, mas garantir limpeza
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.user');
-            // Cookie será limpo pelo backend
-          }
-          toast.warning('Sessão encerrada por segurança', {
-            description: 'Um erro foi detectado no modo análise. Você foi deslogado automaticamente por segurança.',
-            duration: 5000,
-          });
-        }
       }
     };
 
@@ -116,16 +64,14 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
   }, []);
 
   // Navegar automaticamente para a rota do passo atual
-  // IMPORTANTE: Não navegar se o login falhou (previne loops)
   useEffect(() => {
-    // NÃO navegar se modo análise não está habilitado, login falhou, ou está em progresso de login
-    if (!enabled || loginFailed || loginInProgressRef.current) return;
+    if (!enabled) return;
     
     const currentStep = analysisSteps[currentStepIndex];
     if (currentStep && pathname !== currentStep.route) {
       router.push(currentStep.route);
     }
-  }, [enabled, currentStepIndex, pathname, router, loginFailed]);
+  }, [enabled, currentStepIndex, pathname, router]);
 
   // Adicionar/remover classe no body para overlay e proteção de segurança
   useEffect(() => {
@@ -135,10 +81,20 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
       // Proteção adicional: prevenir interações via JavaScript
       // IMPORTANTE: Funciona mesmo quando HUD está minimizado
       const preventInteraction = (e: Event) => {
-        // Permitir apenas eventos do HUD
+        // Permitir apenas eventos do HUD e modais
         const target = e.target as HTMLElement;
-        if (target && target.closest && target.closest('.analysis-hud-panel')) {
-          return; // Permitir interação no HUD
+        if (target && target.closest) {
+          // Permitir interação no HUD
+          if (target.closest('.analysis-hud-panel')) {
+            return;
+          }
+          // Permitir interação em modais (Dialog, AlertDialog, etc)
+          if (target.closest('[role="dialog"]') || 
+              target.closest('[data-radix-portal]') ||
+              target.closest('.radix-dialog') ||
+              target.closest('[id*="radix"]')) {
+            return;
+          }
         }
         // Bloquear TODAS as outras interações, mesmo quando HUD está minimizado
         e.preventDefault();
@@ -489,342 +445,15 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
     };
   }, [enabled, currentStepIndex, pathname]);
 
-  // Auto-login quando necessário - tentar apenas 1 vez POR SESSAO
-  useEffect(() => {
-    // Se modo análise não está habilitado ou login já falhou, não fazer nada
-    if (!enabled || loginFailed) {
-      // Limpar timeout se existir
-      if (loginTimeoutRef.current) {
-        clearTimeout(loginTimeoutRef.current);
-        loginTimeoutRef.current = null;
-      }
-      loginInProgressRef.current = false;
-      setIsLoginLoading(false);
-      return;
-    }
-    
-    const currentStep = analysisSteps[currentStepIndex];
-    
-    // Se não é passo de auto-login, resetar refs (mas manter loginAttemptedRef para prevenir retentativas)
-    if (!currentStep?.autoLogin) {
-      loginInProgressRef.current = false;
-      setIsLoginLoading(false);
-      if (loginTimeoutRef.current) {
-        clearTimeout(loginTimeoutRef.current);
-        loginTimeoutRef.current = null;
-      }
-      return;
-    }
-
-    // CRITICAL: Se já tentou login UMA VEZ (mesmo que em outro passo), NÃO tentar novamente
-    // Isso previne loops quando navegação falha ou há re-renders
-    if (loginAttemptedRef.current) {
-      return;
-    }
-
-    // Se já está em progresso, não iniciar outra tentativa
-    if (loginInProgressRef.current) {
-      return;
-    }
-
-    // Marcar que está tentando login AGORA
-    loginAttemptedRef.current = true;
-    loginInProgressRef.current = true;
-    setIsLoginLoading(true); // Ativar loading na UI
-
-    // Importação dinâmica para evitar circular dependency
-    const performLogin = async () => {
-      try {
-        const { performAnalysisLogin } = await import('@/lib/analysis-auto-login');
-        const loginResponse = await performAnalysisLogin();
-        
-        // Marcar que tentativa foi concluída
-        loginInProgressRef.current = false;
-        setIsLoginLoading(false); // Desativar loading
-        loginTimeoutRef.current = null;
-        
-        if (!loginResponse || !loginResponse.token) {
-          // IMPORTANTE: Desabilitar modo análise IMEDIATAMENTE e deslogar
-          setLoginFailed(true);
-          setEnabled(false);
-          setCurrentStepIndex(0);
-          
-          // Limpar dados do usuário do localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.user');
-            // Cookie será limpo pelo backend
-          }
-          
-          // Deslogar usuário de teste em caso de erro
-          try {
-            await logout();
-            toast.warning('Sessão encerrada por segurança', {
-              description: 'Falha no login automático. Você foi deslogado automaticamente por segurança.',
-              duration: 5000,
-            });
-          } catch (e) {
-            // Ignorar erros de logout, mas garantir limpeza do localStorage
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('colecionai.user');
-              // Cookie será limpo pelo backend
-            }
-            toast.warning('Sessão encerrada por segurança', {
-              description: 'Falha no login automático. Você foi deslogado automaticamente por segurança.',
-              duration: 5000,
-            });
-          }
-          
-          // Mostrar modal de erro
-          setShowLoginErrorModal(true);
-          
-          // NÃO redirecionar aqui - deixar o usuário onde está
-          // O modal vai explicar o que aconteceu
-        } else {
-          // Se sucesso, resetar flag de falha mas MANTER loginAttemptedRef = true
-          // para prevenir novas tentativas
-          setLoginFailed(false);
-          
-          // PRIMEIRO: Setar os dados do usuário da sessão no estado global (React Query)
-          // Isso garante que todos os componentes que usam useAuth() recebam os dados imediatamente
-          if (loginResponse.user) {
-            queryClient.setQueryData(['session-user'], loginResponse.user);
-          }
-          
-          // Aguardar um pouco para garantir que o React Query reconhece o novo token
-          // e faz a requisição /me antes de navegar
-          await new Promise(resolve => setTimeout(resolve, 800));
-          
-          // Navegar para o próximo passo (dashboard) - o useEffect de navegação vai cuidar disso
-          // Mas garantimos que não bloqueie devido ao loginFailed
-        }
-      } catch (error) {
-        console.error('Erro no auto-login:', error);
-        
-        // Marcar que tentativa foi concluída
-        loginInProgressRef.current = false;
-        setIsLoginLoading(false); // Desativar loading
-        loginTimeoutRef.current = null;
-        
-        // IMPORTANTE: Desabilitar modo análise IMEDIATAMENTE e deslogar
-        setLoginFailed(true);
-        setEnabled(false);
-        setCurrentStepIndex(0);
-        
-        // Limpar dados do usuário do localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('colecionai.user');
-          // Cookie será limpo pelo backend
-        }
-        
-        // Deslogar usuário de teste em caso de erro
-        try {
-          await logout();
-          toast.warning('Sessão encerrada por segurança', {
-            description: 'Erro no login automático. Você foi deslogado automaticamente por segurança.',
-            duration: 5000,
-          });
-        } catch (e) {
-          // Ignorar erros de logout, mas garantir limpeza do localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.user');
-            // Cookie será limpo pelo backend
-          }
-          toast.warning('Sessão encerrada por segurança', {
-            description: 'Erro no login automático. Você foi deslogado automaticamente por segurança.',
-            duration: 5000,
-          });
-        }
-        
-        // Mostrar modal de erro
-        setShowLoginErrorModal(true);
-        
-        // NÃO redirecionar aqui
-      }
-    };
-
-    // Delay para dar tempo do usuário ler a mensagem
-    loginTimeoutRef.current = setTimeout(performLogin, 1500);
-    
-    return () => {
-      // Limpar timeout se component desmontar ou effect rodar novamente
-      if (loginTimeoutRef.current) {
-        clearTimeout(loginTimeoutRef.current);
-        loginTimeoutRef.current = null;
-      }
-      // NÃO resetar loginAttemptedRef aqui - queremos manter que já tentou
-      // Apenas marcar que não está mais em progresso
-      loginInProgressRef.current = false;
-      setIsLoginLoading(false);
-    };
-  }, [enabled, currentStepIndex, loginFailed]);
-
-  // Auto-login quando necessário - tentar apenas 1 vez POR SESSAO
-  useEffect(() => {
-    // Se modo análise não está habilitado ou login já falhou, não fazer nada
-    if (!enabled || loginFailed) {
-      // Limpar timeout se existir
-      if (loginTimeoutRef.current) {
-        clearTimeout(loginTimeoutRef.current);
-        loginTimeoutRef.current = null;
-      }
-      loginInProgressRef.current = false;
-      setIsLoginLoading(false);
-      return;
-    }
-    
-    const currentStep = analysisSteps[currentStepIndex];
-    
-    // Se não é passo de auto-login, resetar refs (mas manter loginAttemptedRef para prevenir retentativas)
-    if (!currentStep?.autoLogin) {
-      loginInProgressRef.current = false;
-      setIsLoginLoading(false);
-      if (loginTimeoutRef.current) {
-        clearTimeout(loginTimeoutRef.current);
-        loginTimeoutRef.current = null;
-      }
-      return;
-    }
-
-    // CRITICAL: Se já tentou login UMA VEZ (mesmo que em outro passo), NÃO tentar novamente
-    // Isso previne loops quando navegação falha ou há re-renders
-    if (loginAttemptedRef.current) {
-      return;
-    }
-
-    // Se já está em progresso, não iniciar outra tentativa
-    if (loginInProgressRef.current) {
-      return;
-    }
-
-    // Marcar que está tentando login AGORA
-    loginAttemptedRef.current = true;
-    loginInProgressRef.current = true;
-    setIsLoginLoading(true); // Ativar loading na UI
-
-    // Importação dinâmica para evitar circular dependency
-    const performLogin = async () => {
-      try {
-        const { performAnalysisLogin } = await import('@/lib/analysis-auto-login');
-        const loginResponse = await performAnalysisLogin();
-        
-        // Marcar que tentativa foi concluída
-        loginInProgressRef.current = false;
-        setIsLoginLoading(false); // Desativar loading
-        loginTimeoutRef.current = null;
-        
-        if (!loginResponse || !loginResponse.token) {
-          // IMPORTANTE: Desabilitar modo análise IMEDIATAMENTE
-          // Usar callbacks para garantir ordem correta
-          setLoginFailed(true);
-          setEnabled(false);
-          setCurrentStepIndex(0);
-          
-          // Limpar dados do usuário do localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('colecionai.user');
-            // Cookie será limpo pelo backend
-          }
-          
-          // Mostrar modal de erro
-          setShowLoginErrorModal(true);
-          
-          // NÃO redirecionar aqui - deixar o usuário onde está
-          // O modal vai explicar o que aconteceu
-        } else {
-          // Se sucesso, resetar flag de falha mas MANTER loginAttemptedRef = true
-          // para prevenir novas tentativas
-          setLoginFailed(false);
-          
-          // PRIMEIRO: Setar os dados do usuário da sessão no estado global (React Query)
-          // Isso garante que todos os componentes que usam useAuth() recebam os dados imediatamente
-          if (loginResponse.user) {
-            queryClient.setQueryData(['session-user'], loginResponse.user);
-          }
-          
-          // Aguardar um pouco para garantir que o React Query reconhece o novo token
-          // e faz a requisição /me antes de navegar
-          await new Promise(resolve => setTimeout(resolve, 800));
-          
-          // Navegar para o próximo passo (dashboard) - o useEffect de navegação vai cuidar disso
-          // Mas garantimos que não bloqueie devido ao loginFailed
-        }
-      } catch (error) {
-        console.error('Erro no auto-login:', error);
-        
-        // Marcar que tentativa foi concluída
-        loginInProgressRef.current = false;
-        setIsLoginLoading(false); // Desativar loading
-        loginTimeoutRef.current = null;
-        
-        // IMPORTANTE: Desabilitar modo análise IMEDIATAMENTE
-        setLoginFailed(true);
-        setEnabled(false);
-        setCurrentStepIndex(0);
-        
-        // Limpar dados do usuário do localStorage
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('colecionai.user');
-          // Cookie será limpo pelo backend
-        }
-        
-        // Mostrar modal de erro
-        setShowLoginErrorModal(true);
-        
-        // NÃO redirecionar aqui
-      }
-    };
-
-    // Delay para dar tempo do usuário ler a mensagem
-    loginTimeoutRef.current = setTimeout(performLogin, 1500);
-    
-    return () => {
-      // Limpar timeout se component desmontar ou effect rodar novamente
-      if (loginTimeoutRef.current) {
-        clearTimeout(loginTimeoutRef.current);
-        loginTimeoutRef.current = null;
-      }
-      // NÃO resetar loginAttemptedRef aqui - queremos manter que já tentou
-      // Apenas marcar que não está mais em progresso
-      loginInProgressRef.current = false;
-      setIsLoginLoading(false);
-    };
-  }, [enabled, currentStepIndex, loginFailed]);
-
-
   const enable = useCallback(async () => {
-    // Verificar se há usuário logado e deslogar antes de iniciar modo análise
-    // Com cookies httpOnly, não podemos verificar diretamente, mas tentamos fazer logout
-    // para garantir que não há sessão anterior
-    try {
-      await logout();
-      toast.info('Sessão limpa', {
-        description: 'O modo análise requer autenticação própria. Qualquer sessão anterior foi encerrada.',
-      });
-    } catch (error) {
-      // Se falhar, pelo menos limpa o localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('colecionai.user');
-        // Cookie será limpo pelo backend
-      }
-    }
-    
     setEnabled(true);
     setCurrentStepIndex(0);
-    setLoginFailed(false); // Reset flag de falha ao reabilitar
-    setIsLoginLoading(false); // Reset loading
-    loginAttemptedRef.current = false; // Reset ref ao reabilitar - permitir nova tentativa
-    loginInProgressRef.current = false;
-    if (loginTimeoutRef.current) {
-      clearTimeout(loginTimeoutRef.current);
-      loginTimeoutRef.current = null;
-    }
   }, []);
 
   const disable = useCallback(async () => {
     setEnabled(false);
-    setCurrentStepIndex(0); // Reset para o início
-    setHighlightedElement(null); // Limpar elemento destacado
-    setLoginFailed(false); // Reset flag de falha
+    setCurrentStepIndex(0);
+    setHighlightedElement(null);
     
     // Restaurar scroll do body
     document.body.style.overflow = '';
@@ -846,27 +475,8 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
     const spotlights = document.querySelectorAll('.analysis-spotlight');
     spotlights.forEach(el => el.classList.remove('analysis-spotlight'));
     
-    // Deslogar automaticamente o usuário logado pelo modo análise
-    try {
-      await logout();
-      toast.info('Sessão encerrada', {
-        description: 'Você foi deslogado automaticamente ao sair do modo análise.',
-        duration: 4000,
-      });
-    } catch (error) {
-      // Se falhar, pelo menos limpa o localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('colecionai.user');
-        // Cookie será limpo pelo backend
-      }
-      toast.info('Sessão encerrada', {
-        description: 'Você foi deslogado automaticamente ao sair do modo análise.',
-        duration: 4000,
-      });
-    }
-    
     toast.success('Modo Análise encerrado', {
-      description: 'Você foi deslogado automaticamente.',
+      description: 'Obrigado por explorar o projeto!',
     });
     
     // Redirecionar para home
@@ -879,62 +489,37 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
       localStorage.setItem(CHOICE_KEY, newChoice);
     }
     
+    // NÃO habilitar automaticamente - o HUD vai verificar se precisa mostrar modal de nome primeiro
     if (newChoice === 'analysis') {
-      enable();
+      // Verificar se já tem nome antes de habilitar
+      const savedName = localStorage.getItem('analysis_mode_visitor_name');
+      if (savedName && savedName.trim()) {
+        // Se já tem nome, habilitar direto
+        enable();
+      } else {
+        // Se não tem nome, habilitar mas o HUD vai mostrar o modal primeiro
+        enable();
+      }
     }
   }, [enable]);
 
   const goToStep = useCallback((index: number) => {
-    // Bloquear navegação para passos além do atual se login está em progresso
-    const targetStep = analysisSteps[index];
-    const currentStep = analysisSteps[currentStepIndex];
-    
-    if (currentStep?.autoLogin && (loginInProgressRef.current || isLoginLoading)) {
-      toast.info('Aguarde a autenticação', {
-        description: 'Não é possível avançar enquanto o login está em progresso.',
-      });
-      return;
-    }
-    
     if (index >= 0 && index < analysisSteps.length) {
       setCurrentStepIndex(index);
     }
-  }, [currentStepIndex, isLoginLoading]);
+  }, []);
 
   const nextStep = useCallback(() => {
-    const currentStep = analysisSteps[currentStepIndex];
-    
-    // Se está no passo de auto-login e o login ainda está em progresso, bloquear avanço
-    if (currentStep?.autoLogin && (loginInProgressRef.current || isLoginLoading)) {
-      toast.info('Aguarde a autenticação', {
-        description: 'Estamos fazendo login automaticamente. Aguarde um momento...',
-      });
-      return;
-    }
-    
-    // Se está no passo de auto-login e o login ainda não foi tentado, não permitir avançar
-    if (currentStep?.autoLogin && !loginAttemptedRef.current) {
-      toast.info('Aguarde a autenticação', {
-        description: 'O login automático será iniciado em breve. Aguarde...',
-      });
-      return;
-    }
-    
-    // Se está no passo de auto-login e o login falhou, não permitir avançar
-    if (currentStep?.autoLogin && loginFailed) {
-      return; // Modal de erro já deve estar aberto
-    }
-    
     if (currentStepIndex < analysisSteps.length - 1) {
       setCurrentStepIndex(prev => prev + 1);
     } else {
       // Último passo - mostrar mensagem de conclusão
       toast.success('Modo Análise Concluído!', {
-        description: 'Você completou todos os passos do tour técnico.'
+        description: 'Obrigado por explorar o projeto!'
       });
       disable();
     }
-  }, [currentStepIndex, disable, isLoginLoading, loginFailed]);
+  }, [currentStepIndex, disable]);
 
   const prevStep = useCallback(() => {
     if (currentStepIndex > 0) {
@@ -987,7 +572,7 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         currentStep,
         steps: analysisSteps,
         choice,
-        isLoginLoading,
+        isLoginLoading: false, // Não há mais login automático
         enable,
         disable,
         setChoice,
@@ -1005,40 +590,6 @@ export function AnalysisModeProvider({ children }: { children: React.ReactNode }
         currentStepId={currentStep?.id}
         currentRoute={currentStep?.route}
       />
-      {/* Modal de erro de login */}
-      <AlertDialog 
-        open={showLoginErrorModal} 
-        onOpenChange={(open) => {
-          // Só permitir fechar clicando no botão ou fora
-          if (!open && !loginFailed) {
-            setShowLoginErrorModal(false);
-          }
-        }}
-      >
-        <AlertDialogContent className="bg-background border-border z-[110] max-w-md">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Usuário de Teste Não Configurado</AlertDialogTitle>
-            <AlertDialogDescription className="text-textSecondary mt-2">
-              O usuário de teste do Modo Análise ainda não foi configurado neste ambiente. 
-              <br /><br />
-              O Modo Análise foi encerrado automaticamente.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogAction
-            onClick={() => {
-              setShowLoginErrorModal(false);
-              setLoginFailed(false); // Reset flag ao fechar modal
-              // Garantir que vai para home, especialmente se estiver em rota protegida
-              if (pathname.startsWith('/dashboard') || pathname.startsWith('/announce')) {
-                router.push('/');
-              }
-            }}
-            className="w-full sm:w-auto"
-          >
-            Entendi
-          </AlertDialogAction>
-        </AlertDialogContent>
-      </AlertDialog>
     </AnalysisModeContext.Provider>
   );
 }

@@ -37,8 +37,9 @@ export type ProductData = z.infer<typeof productSchema>;
 
 export default function AnnouncePage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
   const { enabled: analysisModeEnabled } = useAnalysisMode();
+  // No modo análise, não requer autenticação (apenas visualização)
+  const { isAuthenticated, isLoading } = useAuth(!analysisModeEnabled);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 

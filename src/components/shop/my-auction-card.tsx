@@ -5,11 +5,12 @@ import { Auction } from '@/types/auction';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, Edit, Trash2, XCircle } from 'lucide-react';
+import { Clock, Edit, Trash2, XCircle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/ui/empty-state';
 import { getProductImageUrl } from '@/services/productService';
 import { DeleteModal } from '@/components/ui/delete-modal';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 interface MyAuctionCardProps {
   auction: Auction;
@@ -22,6 +23,7 @@ interface MyAuctionCardProps {
 export function MyAuctionCard({ auction, onDelete, onCancel, isDeleting = false, isCancelling = false }: MyAuctionCardProps) {
   const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [isFinished, setIsFinished] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
 
   // Calcular tempo restante (similar ao AuctionCard)
   useEffect(() => {
@@ -142,20 +144,36 @@ export function MyAuctionCard({ auction, onDelete, onCancel, isDeleting = false,
           
           {/* Botão Cancelar - só aparece se leilão estiver ativo e tiver callback */}
           {auction.status === 'OPEN' && onCancel && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onCancel(auction.id)}
-              disabled={isCancelling}
-              className="hover:bg-warning/10 hover:text-warning hover:border-warning/30"
-              title="Cancelar leilão (só funciona sem lances)"
-            >
-              {isCancelling ? (
-                <div className="w-4 h-4 border-2 border-warning border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <XCircle className="w-4 h-4" />
-              )}
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCancelDialog(true)}
+                disabled={isCancelling}
+                className="hover:bg-warning/10 hover:text-warning hover:border-warning/30"
+                title="Cancelar leilão (só funciona sem lances)"
+              >
+                {isCancelling ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <XCircle className="w-4 h-4" />
+                )}
+              </Button>
+              
+              <ConfirmDialog
+                open={showCancelDialog}
+                onOpenChange={setShowCancelDialog}
+                onConfirm={() => {
+                  onCancel(auction.id);
+                  setShowCancelDialog(false);
+                }}
+                title="Cancelar Leilão?"
+                description="Tem certeza que deseja cancelar este leilão? Esta ação não pode ser desfeita. O produto voltará para a lista de produtos disponíveis."
+                confirmText="Sim, cancelar"
+                cancelText="Não, manter"
+                variant="destructive"
+              />
+            </>
           )}
           
           <DeleteModal

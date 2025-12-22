@@ -1,10 +1,12 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { Github, Linkedin, Mail, Code2, Database, Zap, Shield, Rocket, Users, Sparkles, TrendingUp, Award } from 'lucide-react';
+import { Github, Linkedin, Mail, Code2, Database, Zap, Shield, Rocket, Users, Sparkles, TrendingUp, Award, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { FeedbackForm } from '@/components/shared/feedback-form';
+import { FeedbackType } from '@/types/feedback';
 import { useEffect, useRef, useState } from 'react';
 
 // Animated Counter Component
@@ -584,27 +586,127 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <Card>
+            <Card className="bg-card/50 backdrop-blur-sm border-2">
               <CardContent className="p-8">
-                <form className="space-y-6" onSubmit={(e) => {
+                <form className="space-y-6" onSubmit={async (e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget);
-                  const suggestion = formData.get('suggestion');
-                  alert(`Obrigado pela sugestão! 🙏\n\n"${suggestion}"\n\nEm breve implementarei um sistema para salvar essas sugestões.`);
-                  e.currentTarget.reset();
+                  const message = formData.get('message') as string;
+                  const rating = parseInt(formData.get('rating') as string);
+                  const name = formData.get('name') as string || 'Visitante Anônimo';
+
+                  try {
+                    const { createFeedback } = await import('@/services/feedbackService');
+                    const { FeedbackType } = await import('@/types/feedback');
+                    const { toast } = await import('sonner');
+                    
+                    const result = await createFeedback({
+                      type: FeedbackType.SUGGESTION,
+                      message: message.trim(),
+                      rating,
+                      visitor_name: name.trim() || 'Visitante Anônimo',
+                      context: 'about_page_suggestions'
+                    });
+
+                    // Verificar se realmente foi criado com sucesso
+                    if (result && result.id) {
+                      toast.success('Sugestão enviada com sucesso!', {
+                        description: 'Obrigado por me ajudar a crescer! 🙏'
+                      });
+
+                      e.currentTarget.reset();
+                      // Reset rating stars
+                      const stars = document.querySelectorAll('[data-rating-star]');
+                      stars.forEach(star => {
+                        star.classList.remove('fill-yellow-400', 'text-yellow-400');
+                        star.classList.add('text-muted-foreground');
+                      });
+                      // Reset hidden input
+                      const ratingInput = document.querySelector('[name="rating"]') as HTMLInputElement;
+                      if (ratingInput) ratingInput.value = '3';
+                    } else {
+                      throw new Error('Resposta inválida do servidor');
+                    }
+                  } catch (error: any) {
+                    console.error('Erro ao enviar feedback:', error);
+                    const { toast } = await import('sonner');
+                    // Só mostrar erro se realmente houver um problema
+                    if (error.message && !error.message.includes('Network Error')) {
+                      toast.error('Erro ao enviar sugestão', {
+                        description: error.message || 'Tente novamente'
+                      });
+                    }
+                  }
                 }}>
+                  {/* Rating Stars */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium">
-                      O que você sugere que eu estude em 2026?
+                      Como você avalia este projeto? *
+                    </label>
+                    <div className="flex gap-2 justify-center">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          data-rating-star={star}
+                          onClick={(e) => {
+                            const stars = document.querySelectorAll('[data-rating-star]');
+                            stars.forEach((s, i) => {
+                              const starNum = parseInt(s.getAttribute('data-rating-star') || '0');
+                              if (starNum <= star) {
+                                s.classList.add('text-yellow-400');
+                                s.classList.remove('text-muted-foreground');
+                              } else {
+                                s.classList.remove('text-yellow-400');
+                                s.classList.add('text-muted-foreground');
+                              }
+                            });
+                            // Update hidden input
+                            const input = document.querySelector('[name="rating"]') as HTMLInputElement;
+                            if (input) input.value = star.toString();
+                          }}
+                          className="transition-transform hover:scale-125 focus:outline-none focus:ring-2 focus:ring-primary rounded text-muted-foreground"
+                        >
+                          <Star className="w-10 h-10 fill-current" />
+                        </button>
+                      ))}
+                    </div>
+                    <input type="hidden" name="rating" value="3" required />
+                    <p className="text-xs text-center text-muted-foreground">
+                      Clique nas estrelas para avaliar
+                    </p>
+                  </div>
+
+                  {/* Message */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      O que você sugere que eu estude ou melhore? *
                     </label>
                     <textarea
-                      name="suggestion"
+                      name="message"
                       required
-                      placeholder="Ex: Aprofundar em Kubernetes, estudar Rust, aprender sobre IA/ML, melhorar soft skills..."
-                      className="w-full min-h-[120px] p-4 rounded-lg border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      placeholder="Ex: Aprofundar em Kubernetes, estudar Rust, melhorar performance, adicionar testes..."
+                      className="w-full min-h-[120px] p-4 rounded-lg border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
                     />
                   </div>
 
+                  {/* Name (optional) */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      Seu Nome Completo (opcional)
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Ex: João Silva, Maria Santos..."
+                      className="w-full p-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Se preferir, pode deixar em branco para permanecer anônimo
+                    </p>
+                  </div>
+
+                  {/* Quick Topics */}
                   <div className="space-y-3">
                     <p className="text-sm text-muted-foreground">
                       Algumas ideias que você pode sugerir:
@@ -625,7 +727,7 @@ export default function AboutPage() {
                           variant="outline"
                           className="cursor-pointer hover:bg-primary/10 transition-colors"
                           onClick={() => {
-                            const textarea = document.querySelector('textarea[name="suggestion"]') as HTMLTextAreaElement;
+                            const textarea = document.querySelector('textarea[name="message"]') as HTMLTextAreaElement;
                             if (textarea) {
                               textarea.value = textarea.value ? `${textarea.value}, ${topic}` : topic;
                               textarea.focus();
@@ -645,11 +747,14 @@ export default function AboutPage() {
               </CardContent>
             </Card>
 
-            <div className="mt-6 text-center text-sm text-muted-foreground">
-              <p>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground mb-2">
                 💡 Também aceito sugestões sobre: tendências do mercado, tecnologias emergentes, 
                 melhores práticas, livros, cursos, ou qualquer dica que possa me ajudar a evoluir!
               </p>
+              <a href="/feedback" className="text-sm text-primary hover:underline font-medium">
+                Ver dashboard completo de feedbacks →
+              </a>
             </div>
           </motion.div>
         </div>

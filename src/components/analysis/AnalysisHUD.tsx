@@ -5,8 +5,8 @@ import { X, ChevronLeft, ChevronRight, XCircle, Shield, Loader2, ChevronUp, Chev
 import { Button } from '@/components/ui/button';
 import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
 import { AnalysisStepContent } from './AnalysisStepContent';
-import { AnalysisFeedback } from './AnalysisFeedback';
 import { AnalysisContact } from './AnalysisContact';
+import { VisitorNameModal } from './VisitorNameModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Spinner } from '@/components/ui/spinner';
 import {
@@ -39,6 +39,9 @@ export function AnalysisHUD() {
   const [hudWidth, setHudWidth] = useState(550);
   const prevHudSideRef = useRef<'left' | 'right'>('right'); // Rastrear lado anterior para animação
   const [shouldAnimate, setShouldAnimate] = useState(false); // Controlar quando animar
+  const [visitorName, setVisitorName] = useState('');
+  const [isIdentificationComplete, setIsIdentificationComplete] = useState(false);
+  const [isIdentificationModalOpen, setIsIdentificationModalOpen] = useState(false);
 
   // Detectar se é mobile e atualizar classes no body
   useEffect(() => {
@@ -55,6 +58,33 @@ export function AnalysisHUD() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Detectar quando modal de identificação está aberto para comprimir HUD
+  useEffect(() => {
+    if (!enabled) return;
+
+    const checkModal = () => {
+      const modalOpen = document.body.hasAttribute('data-identification-modal-open');
+      setIsIdentificationModalOpen(modalOpen);
+      
+      // Comprimir HUD quando modal estiver aberto
+      if (modalOpen && !isMinimized) {
+        setIsMinimized(true);
+      }
+    };
+
+    // Verificar imediatamente
+    checkModal();
+
+    // Observar mudanças no atributo
+    const observer = new MutationObserver(checkModal);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-identification-modal-open']
+    });
+
+    return () => observer.disconnect();
+  }, [enabled, isMinimized]);
 
   // Determinar lado e largura do HUD baseado no passo atual
   // Também detecta automaticamente se elemento destacado está à direita
@@ -143,14 +173,75 @@ export function AnalysisHUD() {
     };
   }, [enabled, isMinimized, isMobile, hudSide]);
 
-  if (!enabled || !currentStep) return null;
+  // Verificar se já foi identificado quando modo análise é habilitado
+  // SEMPRE mostrar modal de nome quando iniciar análise se não tiver nome salvo
+  useEffect(() => {
+    if (enabled) {
+      // Pequeno delay para garantir que o modal apareça
+      const timer = setTimeout(() => {
+        const savedName = localStorage.getItem('analysis_mode_visitor_name');
+        const hasAsked = localStorage.getItem('analysis_mode_asked_name');
+        
+        console.log('[AnalysisHUD] Modo análise habilitado. savedName:', savedName, 'hasAsked:', hasAsked);
+        
+        // Se já tem nome salvo E foi perguntado antes, marcar como completo
+        if (savedName && savedName.trim() && hasAsked) {
+          setVisitorName(savedName);
+          setIsIdentificationComplete(true);
+          console.log('[AnalysisHUD] Nome já existe, marcando como completo:', savedName);
+        } else {
+          // Se NÃO tem nome OU não foi perguntado, SEMPRE mostrar modal
+          setIsIdentificationComplete(false);
+          console.log('[AnalysisHUD] Nome não encontrado ou não foi perguntado, mostrando modal de coleta');
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    } else {
+      setIsIdentificationComplete(false);
+    }
+  }, [enabled]);
+
+  if (!enabled) return null;
+  
+  // Se ainda não completou identificação, mostrar modal de nome
+  if (!isIdentificationComplete) {
+    return (
+      <>
+        {/* Modal de Nome do Visitante */}
+        <VisitorNameModal
+          open={!isIdentificationComplete}
+          onComplete={(name) => {
+            if (name) {
+              setVisitorName(name);
+              localStorage.setItem('analysis_mode_visitor_name', name);
+            }
+            localStorage.setItem('analysis_mode_asked_name', 'true');
+            setIsIdentificationComplete(true);
+          }}
+          onSkip={() => {
+            localStorage.setItem('analysis_mode_asked_name', 'true');
+            setIsIdentificationComplete(true);
+          }}
+        />
+        
+        {/* Overlay de bloqueio */}
+        <div className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-center text-white space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto"></div>
+            <p className="text-lg">Aguardando identificação...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Se não tem currentStep, não renderizar HUD ainda
+  if (!currentStep) return null;
 
   const progress = ((currentStepIndex + 1) / steps.length) * 100;
   
-  // Verificar se usuário está autenticado
-  // Com cookies httpOnly, não podemos verificar diretamente
-  // Assumimos que está autenticado se o modo análise está ativo (já fez auto-login)
-  const isAuthenticated = enabled;
+  // Modo análise não requer autenticação - removida verificação
   
   // Mostrar blur apenas no primeiro passo
   const showBlurOverlay = currentStepIndex === 0;
@@ -171,6 +262,7 @@ export function AnalysisHUD() {
 
   return (
     <>
+
       <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
         <AlertDialogContent className="bg-background border-border z-[110] max-w-md">
           <AlertDialogHeader className="space-y-4">
@@ -184,15 +276,7 @@ export function AnalysisHUD() {
             </div>
             <AlertDialogDescription className="text-textSecondary text-base leading-relaxed space-y-3 pt-2">
               <p>
-                {isAuthenticated ? (
-                  <>
-                    Ao sair do modo análise, você será <strong>deslogado automaticamente</strong> e perderá o progresso atual do tour técnico.
-                  </>
-                ) : (
-                  <>
-                    Ao sair do modo análise, você perderá o progresso atual do tour técnico.
-                  </>
-                )}
+                Ao sair do modo análise, você perderá o progresso atual do tour técnico.
               </p>
               <div className="bg-muted/50 border border-border rounded-lg p-4 space-y-2">
                 <p className="text-sm font-medium text-foreground flex items-center gap-2">
@@ -221,7 +305,7 @@ export function AnalysisHUD() {
               onClick={handleConfirmExit}
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto order-1 sm:order-2"
             >
-              {isAuthenticated ? 'Sair e Deslogar' : 'Sair'}
+              Sair do Modo Análise
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -306,8 +390,8 @@ export function AnalysisHUD() {
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header - Mais espaçoso */}
-              <div className={`p-4 sm:p-6 border-b border-border bg-backgroundSecondary shrink-0 ${isMinimized ? 'p-2' : ''}`}>
+              {/* Header - Mais espaçoso e elegante */}
+              <div className={`p-5 sm:p-6 border-b border-border bg-gradient-to-r from-backgroundSecondary to-backgroundSecondary/50 shrink-0 ${isMinimized ? 'p-2' : ''}`}>
                 {!isMinimized ? (
                   <>
                     <div className="flex items-center justify-between mb-4">
@@ -434,48 +518,27 @@ export function AnalysisHUD() {
                 )}
               </div>
 
-              {/* Content - Scrollable com mais espaço (oculto quando minimizado) */}
+              {/* Content - Scrollable com mais espaço e melhor leitura (oculto quando minimizado) */}
               {!isMinimized && (
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-                {/* Loading durante autenticação automática */}
-                {isLoginLoading && currentStep?.autoLogin && (
-                  <div className="flex flex-col items-center justify-center py-8 space-y-4 animate-in fade-in">
-                    <Spinner size="lg" />
-                    <div className="text-center space-y-2">
-                      <p className="text-lg font-semibold text-textPrimary">
-                        Autenticando...
-                      </p>
-                      <p className="text-sm text-textSecondary">
-                        Fazendo login automaticamente com credenciais de demonstração.
-                        <br />
-                        Aguarde enquanto processamos sua autenticação.
-                      </p>
+              <div className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6 
+                scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent
+                hover:scrollbar-thumb-primary/30 transition-colors">
+                {/* Conteúdo do passo */}
+                <>
+                  <AnalysisStepContent />
+                  {/* Seção de contato no último passo */}
+                  {currentStepIndex === steps.length - 1 && (
+                    <div className="mt-8 pt-6 border-t border-border">
+                      <AnalysisContact />
                     </div>
-                  </div>
-                )}
-                
-                {/* Conteúdo do passo (oculto durante loading de login) */}
-                {(!isLoginLoading || !currentStep?.autoLogin) && (
-                  <>
-                    <AnalysisStepContent />
-                    {/* Seção de contato no último passo */}
-                    {currentStepIndex === steps.length - 1 && (
-                      <div className="mt-8 pt-6 border-t border-border">
-                        <AnalysisContact />
-                      </div>
-                    )}
-                  </>
-                )}
+                  )}
+                </>
               </div>
               )}
 
-              {/* Footer - Fixed com mais espaço (oculto quando minimizado) */}
+              {/* Footer - Navegação em destaque */}
               {!isMinimized && (
-              <div className="p-4 sm:p-6 border-t border-border bg-backgroundSecondary space-y-5 shrink-0">
-                {/* Feedback */}
-                <AnalysisFeedback />
-
-                {/* Navigation */}
+              <div className="border-t border-border bg-backgroundSecondary shrink-0 p-4 sm:p-5 space-y-3">
                 <div className="flex gap-3">
                   <Button
                     variant="outline"

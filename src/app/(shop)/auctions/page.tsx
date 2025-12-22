@@ -6,6 +6,7 @@ import { getAuctions, getMyAuctions, deleteAuction, cancelAuction } from '@/serv
 import { Auction, AuctionFilters as AuctionFiltersType } from '@/types/auction';
 import { AuctionCard } from '@/components/shop/auction-card';
 import { MyAuctionCard } from '@/components/shop/my-auction-card';
+import { AuctionCardSkeleton } from '@/components/shop/auction-card-skeleton';
 import { AuctionFilters } from '@/components/shop/auction-filters';
 import { AuctionRulesModal } from '@/components/ui/auction-rules-modal';
 import { Button } from '@/components/ui/button';
@@ -161,14 +162,9 @@ export default function AuctionsPage() {
           <AuctionFilters filters={filters} onFilterChange={handleFilterChange} />
 
           {loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="space-y-4">
-                  <Skeleton className="aspect-square w-full" />
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
+            <div className="grid grid-cols-1 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <AuctionCardSkeleton key={i} />
               ))}
             </div>
           )}

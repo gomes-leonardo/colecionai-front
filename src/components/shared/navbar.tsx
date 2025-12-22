@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Search, Menu, Plus, LogOut, Microscope, Gavel, Info, MessageSquare, Bell } from 'lucide-react';
+import { Search, Menu, Plus, LogOut, Microscope, Gavel, MessageSquare, Bell, Users } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { CartSheet } from '@/components/shared/cart-sheet';
 import {
@@ -19,7 +20,6 @@ import { logout } from '@/services/authService';
 import { useAuth } from '@/hooks/useAuth';
 import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { AuctionsInfoModal } from '@/components/ui/auctions-info-modal';
 import { MessagesPopup } from '@/components/shared/messages-popup';
 import { NotificationsPopup } from '@/components/shared/notifications-popup';
 
@@ -47,7 +47,10 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
   const { user, isAuthenticated } = useAuth(false);
   const { enabled, enable, disable } = useAnalysisMode();
   const { unreadCount, clearAllNotifications } = useNotifications();
-  const [showAuctionsInfo, setShowAuctionsInfo] = useState(false);
+  const pathname = usePathname();
+  
+  // Hide cart and search on institutional pages
+  const isInstitutionalPage = pathname === '/about' || pathname === '/feedback';
   const [showMessages, setShowMessages] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [messagesMinimized, setMessagesMinimized] = useState(false);
@@ -71,11 +74,6 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
 
   return (
     <>
-      <AuctionsInfoModal
-        open={showAuctionsInfo}
-        onOpenChange={setShowAuctionsInfo}
-      />
-
       <nav className="border-b border-border/80 bg-background/95 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo com imagem */}
@@ -100,27 +98,42 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
             </Button>
           </Link>
           
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowAuctionsInfo(true)}
-            className="h-9 w-9 text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200"
-            title="Como funcionam os leilões"
-          >
-            <Info className="w-4 h-4" />
-          </Button>
+          {/* Botão de About */}
+          <Link href="/about">
+            <Button 
+              variant="ghost" 
+              className="gap-2 hover:bg-primary/10 transition-all"
+            >
+              <Users className="w-4 h-4" />
+              <span>Sobre</span>
+            </Button>
+          </Link>
+          
+          {/* Botão de Feedbacks */}
+          <Link href="/feedback">
+            <Button 
+              variant="ghost" 
+              className="gap-2 hover:bg-primary/10 transition-all"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Feedbacks</span>
+            </Button>
+          </Link>
+          
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-textMuted pointer-events-none" />
-            <input 
-              type="text" 
-              placeholder="Buscar itens..." 
-              className="bg-backgroundSecondary/80 border border-border/60 rounded-lg py-2 pl-10 pr-4 text-sm text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 w-64 transition-all duration-200 hover:border-border"
-            />
-          </div>
+          {!isInstitutionalPage && (
+            <div className="relative hidden md:block">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-textMuted pointer-events-none" />
+              <input 
+                type="text" 
+                placeholder="Buscar itens..." 
+                className="bg-backgroundSecondary/80 border border-border/60 rounded-lg py-2 pl-10 pr-4 text-sm text-textPrimary placeholder:text-textMuted focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 w-64 transition-all duration-200 hover:border-border"
+              />
+            </div>
+          )}
 
          
           {/* Modo Análise Toggle */}
@@ -278,17 +291,6 @@ export function Navbar({ onStartTour }: NavbarProps = {}) {
                     <Gavel className="w-5 h-5" />
                     Leilões
                   </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setShowAuctionsInfo(true);
-                    }}
-                    className="h-8 w-8 text-muted-foreground hover:text-primary"
-                    title="Como funcionam os leilões"
-                  >
-                    <Info className="w-4 h-4" />
-                  </Button>
                 </div>
                 <hr className="border-border" />
                 {isAuthenticated && user ? (
