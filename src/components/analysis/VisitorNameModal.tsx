@@ -109,3 +109,5 @@ export function VisitorNameModal({ open, onComplete, onSkip }: VisitorNameModalP
     </Dialog>
   );
 }
+
+

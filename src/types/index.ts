@@ -60,3 +60,6 @@ export interface RegisterRequest {
 
 // Export auction types
 export * from './auction';
+
+// Export message types
+export * from './message';

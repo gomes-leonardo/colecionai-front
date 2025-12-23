@@ -35,16 +35,21 @@ export function NotificationListener() {
   }, [isConnected]);
 
   // Escuta eventos de notificação do WebSocket
-  // O backend envia 'notification' apenas em casos específicos:
+  // Tipos de notificação:
   // - OUTBID: quando o usuário foi superado por outro lance
   // - OWNER_NEW_BID: quando o dono do produto recebe um novo lance
-  // Não notifica quando o próprio usuário dá um lance (isso seria redundante)
+  // - NEW_MESSAGE: quando o usuário recebe uma nova mensagem
   // IMPORTANTE: O backend envia via io.to(recipient_id).emit("notification", ...)
-  // então o usuário precisa estar conectado e na sala correta (feito automaticamente pelo backend)
   useSocketEvent('notification', (data: any) => {
     console.log('📬 Notificação recebida via WebSocket:', data);
     console.log('📬 Tipo da notificação:', data.type);
-    console.log('📬 Dados completos:', JSON.stringify(data, null, 2));
+
+    // Se for notificação de mensagem, não tratar aqui (MessagesPopup já trata)
+    if (data.type === 'NEW_MESSAGE') {
+      // O MessagesPopup já trata essas notificações e toca o som
+      // Não precisamos fazer nada aqui
+      return;
+    }
 
     // Determina o tipo de notificação baseado no tipo enviado pelo backend
     let notificationType: NotificationType = 'OUTBID';
@@ -62,20 +67,7 @@ export function NotificationListener() {
     }
 
     // Extrai o auction_id dos dados
-    // IMPORTANTE: O backend precisa incluir auction_id no objeto data quando emite bid:received
-    // Exemplo: auctionEvents.emit("bid:received", { ..., auction_id: auction_id })
     const auctionId = data.data?.auction_id || data.auction_id || '';
-    
-    console.log('📬 Auction ID extraído:', auctionId);
-    console.log('📬 Estrutura completa dos dados:', {
-      'data.data': data.data,
-      'data.auction_id': data.auction_id,
-      'data': data
-    });
-    
-    if (!auctionId) {
-      console.warn('⚠️ Notificação recebida sem auction_id. O backend precisa incluir auction_id no objeto data.');
-    }
 
     // Adiciona à lista de notificações
     addNotification({
@@ -98,8 +90,6 @@ export function NotificationListener() {
             const auctionId = data.data?.auction_id || data.auction_id || '';
             if (auctionId) {
               window.location.href = `/auctions/${auctionId}`;
-            } else {
-              console.warn('⚠️ Notificação sem auction_id, não é possível navegar');
             }
           }}
           onClose={() => toast.dismiss(t)}

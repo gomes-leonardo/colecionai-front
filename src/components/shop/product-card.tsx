@@ -93,7 +93,7 @@ export function ProductCard({ product }: ProductCardProps) {
                             {isAuction ? (
                                 <><Gavel className="w-4 h-4 mr-2" /> Dar Lance</>
                             ) : (
-                                'Comprar'
+                                'Ver Detalhes'
                             )}
                         </span>
                     </Button>

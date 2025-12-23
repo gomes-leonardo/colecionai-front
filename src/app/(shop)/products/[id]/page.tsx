@@ -15,7 +15,8 @@ import {
   ShieldCheck, 
   Share2,
   Heart,
-  MessageCircle
+  MessageCircle,
+  Edit
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -111,6 +112,26 @@ export default function ProductDetailsPage() {
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
   const shareTitle = product?.name || 'Produto';
 
+  // Check if product belongs to current user
+  const getCurrentUserId = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    const userData = localStorage.getItem('colecionai.user');
+    if (!userData) return null;
+    try {
+      const user = JSON.parse(userData);
+      return user.id;
+    } catch {
+      return null;
+    }
+  };
+
+  const currentUserId = getCurrentUserId();
+  const isOwnProduct = currentUserId === product.user_id;
+
+  // Pre-filled message for buy button
+  const priceFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.price / 100);
+  const initialMessage = `Olá! Tenho interesse no seu produto "${product.name}" por ${priceFormatted}. Está disponível?`;
+
   return (
     <>
       <ShareModal
@@ -146,6 +167,8 @@ export default function ProductDetailsPage() {
         onOpenChange={setShowChatModal}
         sellerName={sellerName}
         productName={product.name}
+        productId={product.id}
+        initialMessage={initialMessage}
       />
 
       <div className="container mx-auto px-4 py-8 max-w-7xl animate-fade-in">
@@ -244,27 +267,46 @@ export default function ProductDetailsPage() {
                 </div>
 
                 <div className="space-y-3">
-                    <Button
-                        size="lg"
-                        className={cn(
-                            "w-full text-lg h-14 font-bold rounded-xl shadow-lg shadow-primary/20",
-                            isAuction ? "bg-amber-500 hover:bg-amber-600" : "bg-primary hover:bg-primary/90"
-                        )}
-                        onClick={() => {
-                          if (isAuction) {
-                            setShowConstructionNotice(true);
-                          }
-                        }}
-                    >
-                        {isAuction ? (
-                            <><Gavel className="mr-2 h-5 w-5" /> Dar Lance</>
-                        ) : (
-                            <><ShoppingCart className="mr-2 h-5 w-5" /> Comprar Agora</>
-                        )}
-                    </Button>
-                    <p className="text-center text-xs text-muted-foreground">
-                        Transação segura e processada pelo Colecionai
-                    </p>
+                    {isOwnProduct ? (
+                      <>
+                        <Button
+                            size="lg"
+                            className="w-full text-lg h-14 font-bold rounded-xl shadow-lg shadow-amber-500/20 bg-amber-500 hover:bg-amber-600 text-white"
+                            onClick={() => router.push('/dashboard/sales')}
+                        >
+                            <Edit className="mr-2 h-5 w-5" /> Editar Produto
+                        </Button>
+                        <p className="text-center text-xs text-muted-foreground">
+                            Este é o seu produto
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                            size="lg"
+                            className={cn(
+                                "w-full text-lg h-14 font-bold rounded-xl shadow-lg shadow-primary/20",
+                                isAuction ? "bg-amber-500 hover:bg-amber-600" : "bg-primary hover:bg-primary/90"
+                            )}
+                            onClick={() => {
+                              if (isAuction) {
+                                setShowConstructionNotice(true);
+                              } else {
+                                setShowChatModal(true);
+                              }
+                            }}
+                        >
+                            {isAuction ? (
+                                <><Gavel className="mr-2 h-5 w-5" /> Dar Lance</>
+                            ) : (
+                                <><ShoppingCart className="mr-2 h-5 w-5" /> Comprar Agora</>
+                            )}
+                        </Button>
+                        <p className="text-center text-xs text-muted-foreground">
+                            Inicie uma conversa com o vendedor
+                        </p>
+                      </>
+                    )}
                 </div>
             </Card>
 
