@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Code2, BookOpen, Sparkles, Zap, AlertCircle, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Code2, BookOpen, Sparkles, AlertCircle, Info, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useAnalysisMode } from '@/contexts/AnalysisModeContext';
 import ReactMarkdown from 'react-markdown';
 import dynamic from 'next/dynamic';
@@ -64,7 +64,6 @@ function Callout({ type = 'info', children }: { type?: 'info' | 'warning' | 'suc
 export function AnalysisStepContent() {
   const { currentStep } = useAnalysisMode();
   const [showTechnical, setShowTechnical] = useState(true);
-  const [showFeedback, setShowFeedback] = useState(false); // Feedback minimizado por padrão
 
   if (!currentStep) return null;
 
@@ -253,31 +252,9 @@ export function AnalysisStepContent() {
         </div>
       )}
 
-      {/* Feedback - Minimizado por padrão, logo abaixo dos detalhes técnicos */}
-      <div className="border border-border/50 rounded-lg overflow-hidden bg-backgroundSecondary/30">
-        <button
-          onClick={() => setShowFeedback(!showFeedback)}
-          className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-backgroundSecondary/50 transition-colors group"
-        >
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-primary/60 group-hover:text-primary transition-colors" />
-            <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-              Feedback (opcional)
-            </span>
-          </div>
-          {showFeedback ? (
-            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
 
-        {showFeedback && (
-          <div className="px-4 pb-4 border-t border-border/50 pt-4">
-            <AnalysisFeedback />
-          </div>
-        )}
-      </div>
+      {/* Feedback - Component já tem seu próprio header colapsável */}
+      <AnalysisFeedback />
     </div>
   );
 }

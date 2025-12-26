@@ -174,7 +174,6 @@ export function MessagesPopup({ isOpen, onClose, onMinimize }: MessagesPopupProp
               label: 'Ver',
               onClick: () => {
                 setSelectedConversation(messageConvId);
-                setShowMessages(true);
               }
             },
             duration: 5000,
